@@ -39,7 +39,7 @@ namespace Sentral
             bool error = false;
             bool complete = false;
 
-            string Confirmation = "ACK_CONNECTED";
+            string Confirmation = "Server_ACK";
             SharedMethod.SendString(ComSocket, Confirmation, out error);
 
             while (!error)

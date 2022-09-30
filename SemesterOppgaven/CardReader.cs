@@ -16,50 +16,42 @@ class CardReader
         while (true)
         {
             comSocket = Connect2Server(out noConnect);
+            
             if (!noConnect)
-            {
-                var options = new JsonSerializerOptions { WriteIndented = true };
-                string jsonString = JsonSerializer.Serialize(comms, comms.GetType(), options);
-                error = SharedMethod.SendString(comSocket, jsonString, out error);
-
-                while (true)
+            {    
+                var someDoorEvent = true;
+                if (someDoorEvent = true)
                 {
-                    string mottattTekst = MottaTekst(comSocket, out error);
-                    if (error) break;
-                    Console.WriteLine(mottattTekst);
+                    string jsonString = JsonSerializer.Serialize(comms, comms.GetType());
+                    error = SharedMethod.SendString(comSocket, jsonString, out error);
+                    while (true) // wait for reply
+                    {
+                        string receivedString = SharedMethod.ReceiveString(comSocket, out error);
+                        if (receivedString != "Server_ACK")
+                        {
+                            Console.WriteLine("{0} received from: {1}", receivedString, comSocket.RemoteEndPoint);
+                        }
+                        else
+                        {
+                            ReturnCardComms returnCard = JsonSerializer.Deserialize<ReturnCardComms>(receivedString);
+                        }
+                        if (error) break;
+                    }
                 }
+
+
             }
-            Thread.Sleep(1000);
+            Thread.Sleep(1000); //Wait 1000MS before trying to reconnect
         }
 
-        Console.WriteLine("Bryter forbindelsen med serveren ...");
-        if (!noConnect)
-        {
-            comSocket.Shutdown(SocketShutdown.Both);
-            comSocket.Close();
-        }
+        //shall never be disconnected
+        //if (!noConnect)
+        //{
+        //    comSocket.Shutdown(SocketShutdown.Both);
+        //    comSocket.Close();
+        //}
     }
 
-    static string MottaTekst(Socket kommSokkel, out bool error)
-    {
-        string svar = "";
-        error = false;
-
-        try
-        {
-            byte[] data = new byte[1024];
-            int antallBytesMottatt = kommSokkel.Receive(data);
-
-            if (antallBytesMottatt > 0) svar = Encoding.ASCII.GetString(data, 0, antallBytesMottatt);
-            else error = true;
-        }
-        catch (Exception unntak)
-        {
-            Console.WriteLine("Feil: " + unntak.Message);
-            error = true;
-        }
-        return svar;
-    }
     private static Socket Connect2Server(out bool noConnect)
     {
         noConnect = false;
