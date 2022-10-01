@@ -6,15 +6,9 @@ using System.Text.Json;
 namespace ClassLibrary
 {
     
-    public delegate void UserValidation(object source, UserValidationArgs args);
-    public class UserValidationArgs : EventArgs
-    {
-        public CardComms cardComms { get; }
-        public UserValidationArgs(CardComms cc) => cardComms = cc;
-    }
-
     public class SharedMethod
     {
+
         public static string ReceiveString(Socket comSocket, out bool error)
         {
             string answer = "";
@@ -53,73 +47,82 @@ namespace ClassLibrary
             
         }
     }
-
-
+    
 
     public class Bruker
     {
-        private string? fornavn;
-        private string? etternavn;
-        private string? pin;        //string? means it can be null
-        private int kortID;
-        private DateTime endDato;
-        
+        public string? Fornavn { get; set; }
+        public string? Etternavn { get; set; }
+        public string? Pin { get; set; }     //string? means it can be null
+        public int KortID { get; set; }
+        public DateTime? EndDato { get; set; }
 
         public Bruker(string fornavn, string etternavn, int kortID, DateTime endDato, string pin)
         {
-            this.Fornavn = fornavn;
-            this.Etternavn = etternavn;
-            this.KortID = kortID;
-            this.EndDato = endDato;
-            this.Pin = pin;
+            Fornavn = fornavn;
+            Etternavn = etternavn;
+            KortID = kortID;
+            EndDato = endDato;
+            Pin = pin;
         }
-
-        public string? Fornavn { get => fornavn; set => fornavn = value; }
-        public string? Etternavn { get => etternavn; set => etternavn = value; }
-        public string? Pin { get => pin; set => pin = value; }
-        public int KortID { get => kortID; set => kortID = value; }
-        public DateTime EndDato { get => endDato; set => endDato = value; }
-
     }
     public class CardComms
     {
-        private int cardID;
-        private string? pin;
-        private int number;
-        private DateTime? time;
-        private bool need_validation;
-        private bool alarm_bool;
-        private int alarm_type;
-        private int lastuser;
+
+        public int CardID { get; set; }
+        public string? Pin { get; set; }
+        public int Number { get; set; }
+        public DateTime? Time { get; set; }
+        public bool Need_validation { get; set; }
+        public bool Alarm_bool { get; set; }
+        public int Alarm_type { get; set; }
+        public int Lastuser { get; set; }
 
         public CardComms()  //contructor for communication from card reader to Central
         {
-            this.cardID = 0;
-            this.pin = "";
-            this.time = null;
-            this.number =0;
-            this.alarm_bool = false;
-            this.need_validation = false;
-            this.alarm_type = 0;
-            this.lastuser = 0;
+            CardID = 0;
+            Pin = "";
+            Time = null;
+            Number =0;
+            Alarm_bool = false;
+            Need_validation = false;
+            Alarm_type = 0;
+            Lastuser = 0;
         }
-        public int CardID { get => cardID; set => cardID = value; }
-        public string? Pin { get => pin; set => pin = value; }
-        public DateTime? Time { get => time; set => time = value; }
-        public int Number { get => number; set => number = value; }
-        public int Lastuser { get => lastuser; set => lastuser = value; }
-        public bool Alarm_bool { get => alarm_bool; set => alarm_bool = value; }
-        public int Alarm_type { get => alarm_type; set => alarm_type = value; }
-        public bool Need_validation { get => need_validation; set => need_validation = value; }
+    }
+
+    public class AlarmLogEntry
+    {
+        public Bruker? LastUser { get; set; }
+        public int AlarmType { get; set; }
+        public DateTime? TimeStamp { get; set; }
+        public AlarmLogEntry(Bruker? lastUser, int alarmType, DateTime? timeStamp)
+        {
+            LastUser = lastUser;
+            AlarmType = alarmType;
+            TimeStamp = timeStamp;
+        }
+    }
+
+    public class AccessLogEntry
+    {
+        public Bruker? User { get; set; }
+        public DateTime? TimeStamp { get; set; }
+        public bool AccessGranted { get; set; }
+        public AccessLogEntry(Bruker? user, DateTime? timeStamp, bool accessGranted)
+        {
+            User = user;
+            TimeStamp = timeStamp;
+            AccessGranted = accessGranted;
+        }
     }
     public class ReturnCardComms   //contructor for communication from Central to cardReader
     {
-        private bool validation;
+        public bool Validation { get; set; }
         public ReturnCardComms(bool x = false)  //bool x = false makes contructor optional and sets deafult to false
         {
-            validation = x;
+            Validation = x;
         }
-        public bool Validation { get => validation; set => validation = value; }
     }
  
 }

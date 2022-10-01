@@ -10,11 +10,11 @@ namespace Sentral
     public partial class MainActivity : Form
     {
         object SQL_LOCK = new object();
-
         public MainActivity()
         {
             InitializeComponent();
             ThreadPool.QueueUserWorkItem(StartServer);
+
         }
 
         private static void StartServer(object o)
@@ -24,6 +24,9 @@ namespace Sentral
             IPEndPoint serverEP = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 9050);
             ListenSocket.Bind(serverEP);
             ListenSocket.Listen(10);
+
+            Type? d = Type.GetType("ClassLibrary.CardComms");
+
             while (true)
             {
                 Socket ComSocket = ListenSocket.Accept(); // blokkerende metode
@@ -47,21 +50,25 @@ namespace Sentral
                 // receive data from connected socket.
                 string mottattData = SharedMethod.ReceiveString(ComSocket, out error);
                 CardComms? data = JsonSerializer.Deserialize<CardComms>(mottattData);
+
                 if (data != null)  //nullcheck, handle cardComms
                 {
+                    if (data.Alarm_bool)
+                    {
+                        //ALARM EVENT
+
+
+                    }
                     if (data.Need_validation && !data.Alarm_bool)
                     {
                         //CHECK CARD NUMBER TO PIN SQL QUERY
                         bool Validation = CheckUserPin(ref data);
-                        ReturnCardComms queryReturn = new ReturnCardComms(Validation);   //FOR DEBUGGING
+                        ReturnCardComms queryReturn = new ReturnCardComms(Validation);
                         string jsonString = JsonSerializer.Serialize(queryReturn);
-                        complete = SharedMethod.SendString(ComSocket,jsonString, out error);
+                        complete = SharedMethod.SendString(ComSocket,jsonString,out error);
                         data.Need_validation = false;
                     }
-                    if (data.Alarm_bool)
-                    {
-                        //ALARM EVENT
-                    }
+
                 }
                 if (complete) break;
             }
@@ -83,18 +90,24 @@ namespace Sentral
                 access = false;
             }
 
-            SQLlogAccessEntry(ref data);
+            SQLlogAccessEntry(new AccessLogEntry(SQLqueryBruker,data.Time,access));
             return access;
         }
 
-        private static void SQLlogAccessEntry(ref CardComms data)
+
+        private static void SQLlogAlarm(AlarmLogEntry x)
         {
-            //something something log access try from data to SQL
+            //something something log alarm SQL, ID set bt SQL DB
+        }
+
+        private static void SQLlogAccessEntry(AccessLogEntry x)
+        {
+            //something something log access try from data to SQL, ID set bt SQL DB
         }
 
         private static Bruker SQLrequestUser(int cardID)
         {
-            //HER MÅ DET HENTES BRUKER FRA SQL DB iht cardID
+            //Get user from SQL DB in accordance with cardID
             DateTime fuuuu = new DateTime(2025, 12, 25, 10, 30, 50);
             Bruker SQLbruker = new Bruker("fredrik", "skavlem",1234,fuuuu, "1111");
             return SQLbruker;
