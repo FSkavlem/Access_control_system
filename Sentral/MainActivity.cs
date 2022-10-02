@@ -17,7 +17,7 @@ namespace Sentral
 
         }
 
-        private static void StartServer(object o)
+        private static void StartServer(object? o)
         {
             // Server setup config
             Socket ListenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -41,35 +41,34 @@ namespace Sentral
             Socket ComSocket = arg as Socket;
             bool error = false;
             bool complete = false;
-
-            string Confirmation = "Server_ACK";
-            SharedMethod.SendString(ComSocket, Confirmation, out error);
+            Central.SendString(ComSocket, PackageIdentifier.ServerACK, out error);
 
             while (!error)
             {
                 // receive data from connected socket.
-                string mottattData = SharedMethod.ReceiveString(ComSocket, out error);
-                CardComms? data = JsonSerializer.Deserialize<CardComms>(mottattData);
+                string receivedString = Central.ReceiveString(ComSocket, out error);
+                string packageID = Central.GetPackageIdentifier(ref receivedString,out receivedString);
 
-                if (data != null)  //nullcheck, handle cardComms
+                switch (packageID)
                 {
-                    if (data.Alarm_bool)
-                    {
-                        //ALARM EVENT
+                    case PackageIdentifier.AlarmEvent:
+                        AlarmEvent alarmEvent = JsonSerializer.Deserialize<AlarmEvent>(receivedString);
 
+                        break;
+                    case PackageIdentifier.CardInfo:
 
-                    }
-                    if (data.Need_validation && !data.Alarm_bool)
-                    {
-                        //CHECK CARD NUMBER TO PIN SQL QUERY
-                        bool Validation = CheckUserPin(ref data);
+                        CardInfo cardInfo = JsonSerializer.Deserialize<CardInfo>(receivedString);
+                        bool Validation = CheckUserPin(cardInfo);
                         ReturnCardComms queryReturn = new ReturnCardComms(Validation);
                         string jsonString = JsonSerializer.Serialize(queryReturn);
-                        complete = SharedMethod.SendString(ComSocket,jsonString,out error);
-                        data.Need_validation = false;
-                    }
+                        jsonString = Central.AddPackageIdentifier(PackageIdentifier.PinValidation, jsonString);
+                        complete = Central.SendString(ComSocket, jsonString,out error);
 
+                        break;
+                    case PackageIdentifier.RequestNumber:
+                        break;
                 }
+
                 if (complete) break;
             }
             // Lukker kommunikasjonssokkel og viser info
@@ -77,11 +76,11 @@ namespace Sentral
             ComSocket.Close();
         }
 
-        private static bool CheckUserPin(ref CardComms data)
+        private static bool CheckUserPin(CardInfo data)
         {
             bool access;
-            Bruker SQLqueryBruker = SQLrequestUser(data.CardID);
-            if (SQLqueryBruker.Pin == data.Pin)
+            User SQLqueryBruker = SQLrequestUser(data.CardID);
+            if (SQLqueryBruker.Pin == data.PinEntered)
             {
                 access = true;
             }
@@ -105,11 +104,11 @@ namespace Sentral
             //something something log access try from data to SQL, ID set bt SQL DB
         }
 
-        private static Bruker SQLrequestUser(int cardID)
+        private static User SQLrequestUser(int cardID)
         {
             //Get user from SQL DB in accordance with cardID
             DateTime fuuuu = new DateTime(2025, 12, 25, 10, 30, 50);
-            Bruker SQLbruker = new Bruker("fredrik", "skavlem",1234,fuuuu, "1111");
+            User SQLbruker = new User("fredrik", "skavlem",1234,fuuuu, "1111");
             return SQLbruker;
         }
     }

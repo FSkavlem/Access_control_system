@@ -6,9 +6,15 @@ using System.Text.Json;
 namespace ClassLibrary
 {
     
-    public class SharedMethod
+    public class Central
     {
-
+        public static string AddPackageIdentifier(string identifier, string aString) => identifier + aString;
+        public static string GetPackageIdentifier(ref string? stringIn,out string stringOut)
+        {
+            string temp= stringIn.Substring(0, PackageIdentifier.Length);
+            stringOut = stringIn.Remove(0, PackageIdentifier.Length);    
+            return temp;
+        }
         public static string ReceiveString(Socket comSocket, out bool error)
         {
             string answer = "";
@@ -44,27 +50,42 @@ namespace ClassLibrary
                 error = true;
                 return false;
             }
-            
+
         }
+
+
     }
     
-
-    public class Bruker
+    public class User
     {
         public string? Fornavn { get; set; }
         public string? Etternavn { get; set; }
         public string? Pin { get; set; }     //string? means it can be null
-        public int KortID { get; set; }
+        public int CardID { get; set; }
         public DateTime? EndDato { get; set; }
 
-        public Bruker(string fornavn, string etternavn, int kortID, DateTime endDato, string pin)
+        public User(string fornavn, string etternavn, int kortID, DateTime endDato, string pin)
         {
             Fornavn = fornavn;
             Etternavn = etternavn;
-            KortID = kortID;
+            CardID = kortID;
             EndDato = endDato;
             Pin = pin;
         }
+    }
+    public class CardInfo
+    {   //generated default contructor
+        public int CardID { get; set; }
+        public string? PinEntered { get; set; }
+        public int Number { get; set; }
+        public DateTime? Time { get; set; }
+    }
+    public class AlarmEvent
+    {
+        public bool Alarm_bool { get; set; }
+        public int Alarm_type { get; set; }
+        public CardInfo LastCardUsed { get; set; }
+        public DateTime? Time { get; set; }
     }
     public class CardComms
     {
@@ -93,23 +114,33 @@ namespace ClassLibrary
 
     public class AlarmLogEntry
     {
-        public Bruker? LastUser { get; set; }
+        public User? LastUser { get; set; }
         public int AlarmType { get; set; }
         public DateTime? TimeStamp { get; set; }
-        public AlarmLogEntry(Bruker? lastUser, int alarmType, DateTime? timeStamp)
+        public AlarmLogEntry(User? lastUser, int alarmType, DateTime? timeStamp)
         {
             LastUser = lastUser;
             AlarmType = alarmType;
             TimeStamp = timeStamp;
         }
     }
+    public static class PackageIdentifier
+    {
+        public const int Length = 6;
+        public const string ServerACK = "100001";
+        public const string AlarmEvent = "200001";
+        public const string CardInfo = "300001";
+        public const string RequestNumber = "400001";
+        public const string PinValidation = "500001";
+    }
+
 
     public class AccessLogEntry
     {
-        public Bruker? User { get; set; }
+        public User? User { get; set; }
         public DateTime? TimeStamp { get; set; }
         public bool AccessGranted { get; set; }
-        public AccessLogEntry(Bruker? user, DateTime? timeStamp, bool accessGranted)
+        public AccessLogEntry(User? user, DateTime? timeStamp, bool accessGranted)
         {
             User = user;
             TimeStamp = timeStamp;
