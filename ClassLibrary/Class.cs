@@ -55,7 +55,25 @@ namespace ClassLibrary
 
 
     }
-    
+
+    public class Door
+    {
+        public int nodeNum { get; set; }
+        public DateTime time { get; set; }
+        public bool[] KeyPad { get; set; }
+        public bool AccessTry_e4 { get; set; }
+        public bool DoorLocked_e5 { get; set; }
+        public bool DoorOpen_e6 { get; set; }
+        public bool Alarm_e7 { get; set; }
+        public bool DoorForcedOpen { get; set; }
+        public string enteredPin { get; set; }
+
+        public Door()
+        {
+            enteredPin = "";
+            KeyPad = new bool[4];
+        }
+    }
     public class User
     {
         public string? Fornavn { get; set; }

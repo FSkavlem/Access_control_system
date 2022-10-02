@@ -14,7 +14,6 @@ namespace Sentral
         {
             InitializeComponent();
             ThreadPool.QueueUserWorkItem(StartServer);
-
         }
 
         private static void StartServer(object? o)
@@ -25,8 +24,6 @@ namespace Sentral
             ListenSocket.Bind(serverEP);
             ListenSocket.Listen(10);
 
-            Type? d = Type.GetType("ClassLibrary.CardComms");
-
             while (true)
             {
                 Socket ComSocket = ListenSocket.Accept(); // blokkerende metode
@@ -36,7 +33,7 @@ namespace Sentral
                 ThreadPool.QueueUserWorkItem(KommunikasjonMedEnKlient, ComSocket);
             }
         }
-        private static void KommunikasjonMedEnKlient(object arg)
+        private static void KommunikasjonMedEnKlient(object? arg)
         {
             Socket ComSocket = arg as Socket;
             bool error = false;
