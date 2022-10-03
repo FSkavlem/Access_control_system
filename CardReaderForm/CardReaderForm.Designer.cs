@@ -29,9 +29,8 @@
         private void InitializeComponent()
         {
             this.listview_access_log = new System.Windows.Forms.ListView();
-            this._Name = new System.Windows.Forms.ColumnHeader();
-            this.pin_entered = new System.Windows.Forms.ColumnHeader();
             this.Card_number = new System.Windows.Forms.ColumnHeader();
+            this.pin_entered = new System.Windows.Forms.ColumnHeader();
             this.access_time = new System.Windows.Forms.ColumnHeader();
             this.access_granted = new System.Windows.Forms.ColumnHeader();
             this.checkBox_dooropen = new System.Windows.Forms.CheckBox();
@@ -45,9 +44,8 @@
             // listview_access_log
             // 
             this.listview_access_log.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this._Name,
-            this.pin_entered,
             this.Card_number,
+            this.pin_entered,
             this.access_time,
             this.access_granted});
             this.listview_access_log.Dock = System.Windows.Forms.DockStyle.Bottom;
@@ -56,25 +54,20 @@
             this.listview_access_log.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.listview_access_log.Location = new System.Drawing.Point(0, 92);
             this.listview_access_log.Name = "listview_access_log";
-            this.listview_access_log.Size = new System.Drawing.Size(815, 67);
+            this.listview_access_log.Size = new System.Drawing.Size(565, 67);
             this.listview_access_log.TabIndex = 1;
             this.listview_access_log.UseCompatibleStateImageBehavior = false;
             this.listview_access_log.View = System.Windows.Forms.View.Details;
-            // 
-            // _Name
-            // 
-            this._Name.Text = "Name";
-            this._Name.Width = 250;
-            // 
-            // pin_entered
-            // 
-            this.pin_entered.Text = "Pin Entered";
-            this.pin_entered.Width = 120;
             // 
             // Card_number
             // 
             this.Card_number.Text = "Card number";
             this.Card_number.Width = 120;
+            // 
+            // pin_entered
+            // 
+            this.pin_entered.Text = "Pin Entered";
+            this.pin_entered.Width = 120;
             // 
             // access_time
             // 
@@ -131,6 +124,7 @@
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(100, 23);
             this.textBox1.TabIndex = 4;
+            this.textBox1.Text = "1234";
             this.textBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox1_KeyPress);
             // 
             // label3
@@ -146,7 +140,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(815, 159);
+            this.ClientSize = new System.Drawing.Size(565, 159);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label2);
@@ -165,7 +159,6 @@
 
         private ListView listview_access_log;
         private ColumnHeader pin_entered;
-        private ColumnHeader _Name;
         private ColumnHeader Card_number;
         private ColumnHeader access_time;
         private ColumnHeader access_granted;

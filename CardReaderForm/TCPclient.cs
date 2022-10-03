@@ -21,6 +21,7 @@ namespace CardReaderForm
             TCPThread.IsBackground = true;
             TCPThread.Start();
         }
+       
         void StartTCPClient()
         {
             Door door = new Door();
@@ -28,30 +29,29 @@ namespace CardReaderForm
             Socket comSocket;
             bool newAccessTry = false;
 
-            GetAccessTryEvent newAccessTryUpdate = new GetAccessTryEvent(mainform.GetNewAccessTry);
+            GetAccessTry newAccessTryUpdate = new GetAccessTry(mainform.GetNewAccessTry);
+            SetAccessTryEvent setAccessTryEvent = new SetAccessTryEvent(mainform.SetNewAccessTry);
+            GetCardID getCardID = new GetCardID(mainform.getCardIDfromForm);
+            GetPublicDoor getPublicDoor = new GetPublicDoor(mainform.GetPublicDoor);
+            SetPinValidation setPinValidation = new SetPinValidation(mainform.SetPinValidation);
+
             while (true)
             {
                 comSocket = Connect2Server(); //no need for 
                 while (comSocket.Connected)
                 {
                     newAccessTry = (bool)mainform.Invoke(newAccessTryUpdate);
+                    door = (Door)mainform.Invoke(getPublicDoor);
 
-                    //if (updateDoor)
-                    //{
-                        //lock (DoorLock) door = PublicDoor;
-                        //lock (BoolLock) updateDoor = false;
-                      //  var a = door;
-                        //FORTSETT HER, updateDoor or newAccessTry til TCP server!
-                    //}
                     if (newAccessTry)
                     {
-                        //int cardid = getCardIDfromForm();
-                        CardInfo cardInfo = new CardInfo { CardID = 1 };
+                        int cardid = (int)mainform.Invoke(getCardID);
+                        CardInfo cardInfo = new CardInfo { CardID = cardid, Number = door.nodeNum, PinEntered = door.enteredPin, Time = door.time };
 
-                        //string jsonString = JsonSerializer.Serialize(queryReturn);
-                        //jsonString = ClassLibrary.Message.AddPackageIdentifier(PackageIdentifier.PinValidation, jsonString);
-                        //complete = ClassLibrary.Message.SendString(ComSocket, jsonString, out error);
-                        //lock (BoolLock) newAccessTry = false;
+                        string jsonString = JsonSerializer.Serialize(cardInfo);
+                        jsonString = ClassLibrary.Message.AddPackageIdentifier(PackageIdentifier.PinValidation, jsonString);
+                        var complete = ClassLibrary.Message.SendString(comSocket, jsonString, out error);
+                        mainform.Invoke(setAccessTryEvent, false);
                     }
                     if (comSocket.Available > 0)
                     {
@@ -64,7 +64,7 @@ namespace CardReaderForm
                                 break;
                             case PackageIdentifier.PinValidation:
                                 ReturnCardComms returnCardComms = JsonSerializer.Deserialize<ReturnCardComms>(receivedString);
-                                Debug.WriteLine("{0} received from: {1}", receivedString, comSocket.RemoteEndPoint);
+                                mainform.Invoke(setPinValidation, returnCardComms.Validation);
                                 break;
                             case PackageIdentifier.RequestNumber:
                             default:
@@ -75,6 +75,7 @@ namespace CardReaderForm
                 Thread.Sleep(1000); //Wait 1000MS before trying to reconnect
             }
         }
+
         private static Socket Connect2Server()
         {
             Socket clientSocket = new Socket(AddressFamily.InterNetwork,

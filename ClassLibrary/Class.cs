@@ -56,13 +56,13 @@ namespace ClassLibrary
         public int nodeNum { get; set; }
         public DateTime time { get; set; }
         public bool[] KeyPad { get; set; }
-        public bool AccessTry_e4 { get; set; }
-        public bool DoorLocked_e5 { get; set; }
-        public bool DoorOpen_e6 { get; set; }
-        public bool Alarm_e7 { get; set; }
-        public bool DoorForcedOpen { get; set; }
+        public bool AccessTry_e4 { get; set; } = false;
+        public bool DoorLocked_e5 { get; set; } = false;
+        public bool DoorOpen_e6 { get; set; } = false;
+        public bool Alarm_e7 { get; set; } = false;
+        public bool DoorForcedOpen { get; set; } = false;
         public string enteredPin { get; set; }
-
+       
         public Door()
         {
             enteredPin = "";
@@ -93,6 +93,13 @@ namespace ClassLibrary
         public int Number { get; set; }
         public DateTime? Time { get; set; }
     }
+    public static class AlarmType
+    {
+        public const int ForceDoor = 1;
+        public const int DoorOpenTooLong = 2;
+
+    }
+
     public class AlarmEvent
     {
         public bool Alarm_bool { get; set; }
@@ -121,7 +128,6 @@ namespace ClassLibrary
         public const string RequestNumber = "400001";
         public const string PinValidation = "500001";
     }
-
 
     public class AccessLogEntry
     {

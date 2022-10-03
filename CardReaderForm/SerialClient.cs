@@ -5,12 +5,15 @@ using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace CardReaderForm
 {
     class SerialClient
     {
         public static bool AccessTry;
+        public static bool AlarmEvent;
+        public static int AlarmType;
         public static bool ResetProccess;
         public static CardReaderForm mainform;
         public void RunCLient(CardReaderForm f)
@@ -26,40 +29,62 @@ namespace CardReaderForm
         private static void StartSerialClient()
         {
             Door door = new Door();
+            bool pinValidationEvent;
+
             AccessTry = false;
             ResetProccess = false;
-            System.Timers.Timer? DoorTimer;
             SerialPort? serialPort = new SerialPort();
+            System.Timers.Timer? DoorTimer;
             DoorTimer = new System.Timers.Timer();
-            DoorTimer.Interval = 45000;
-            DoorTimer.Elapsed += new System.Timers.ElapsedEventHandler(Timer_Elapsed);
+            DoorTimer.Interval = 200;
+            DoorTimer.Elapsed += new System.Timers.ElapsedEventHandler(Doortimer_Timer_Elapsed);
 
-            SetPublicDoor setPublicDoor = new SetPublicDoor(mainform.SetPublicDoor);
-            SetUpdateDoorBool setUpdateDoorBool = new SetUpdateDoorBool(mainform.SetUpdateDoorBool);
+            System.Timers.Timer? EnterPinTimer;
+            EnterPinTimer = new System.Timers.Timer();
+            EnterPinTimer.Interval = 45000;
+            EnterPinTimer.Elapsed += new System.Timers.ElapsedEventHandler(EnterPin_Timer_Elapsed);
+
+            GetPinValidation getPinValidation = new GetPinValidation(mainform.GetPinValidation);
+
           
             while (true)
             {
                 if (!serialPort.IsOpen) connect2Serial(ref serialPort); //connects to serial if its not open
 
+                //Door lock handling
+                pinValidationEvent = (bool)mainform.Invoke(getPinValidation); //checks if pin validation has changed to unlock door. 
+                if (pinValidationEvent)
+                {
+                    UnlockDoor(ref serialPort);
+                }
+                    
+                if (!door.DoorOpen_e6 & !door.DoorLocked_e5)                  //if door is closed but not locked, lock door.
+                {
+                    LockDoor(ref serialPort);
+                    door.DoorLocked_e5 = true;
+                    updateGlobalDoor(door);
+                }
+
+
                 if (ResetProccess)
                 {
                     door.AccessTry_e4 = false;
+                    updateGlobalDoor(door);
                     ToggleCheckBoxesInSimSim(4, false, ref serialPort);
                     ResetProccess = false;
                 }
-                if (door.enteredPin.Length >= 4) DoorTimer.Interval = 1; //after 4 buttons is pressed. Stops e4
+                if (door.enteredPin.Length >= 4) EnterPinTimer.Interval = 1; //after 4 buttons is pressed. Stops e4
 
-                if (serialPort.BytesToRead > 0)
+                if (serialPort.BytesToRead > 0)                         //read Serial if there is incomming traffic
                 {
-                    string str = serial_data_received(ref serialPort);//will only take 65 byte at a time so only one send at the time will be handled
+                    string str = serial_data_received(ref serialPort);  //will only take 65 byte at a time so only one send at the time will be handled
 
-                    updateDoorVars(str, ref door);                  //update current door status
-                    mainform.Invoke(setPublicDoor, door);           //pass current door status to main thread
-                    mainform.Invoke(setUpdateDoorBool, true);       //sets bool for new update
+                    updateDoorVars(str, ref door);                      //update current door status
+                    updateGlobalDoor(door);
 
                     if (door.AccessTry_e4 & !AccessTry)
                     {
-                        DoorTimer.Start();
+                        EnterPinTimer.Start();
                         door.enteredPin = string.Empty;
                         AccessTry = true;
                     }
@@ -67,8 +92,30 @@ namespace CardReaderForm
                     WipeKeyPadSIMSIM(ref serialPort, ref door);
                     var a = door;
                 }
+                Thread.Sleep(100);
             }
         }
+
+
+
+        private static void updateGlobalDoor(Door door)
+        {
+            SetPublicDoor setPublicDoor = new SetPublicDoor(mainform.SetPublicDoor);
+            SetUpdateUIBool setUpdateDoorBool = new SetUpdateUIBool(mainform.SetUpdateUIBool);
+            mainform.Invoke(setPublicDoor, door);               //pass current door status to main thread
+            mainform.Invoke(setUpdateDoorBool, true);           //
+        }
+
+        private static void LockDoor(ref SerialPort serialPort)
+        {
+            ToggleCheckBoxesInSimSim(5, true, ref serialPort);
+        }
+
+        private static void UnlockDoor(ref SerialPort serialPort)
+        {
+            ToggleCheckBoxesInSimSim(5, false, ref serialPort);
+        }
+
         private static void WipeKeyPadSIMSIM(ref SerialPort serialPort, ref Door door)
         {
             for (int i = 0; i < 4; i++)
@@ -88,7 +135,13 @@ namespace CardReaderForm
             string parseString = string.Format("$O{0}{1}", n, temp);
             serialPort.Write(parseString);
         }
-        private static void Timer_Elapsed(object sender, EventArgs e)
+        private static void Doortimer_Timer_Elapsed(object? sender, ElapsedEventArgs e)
+        {
+            var a = (System.Timers.Timer)sender; //get timer handle
+
+        }
+
+        private static void EnterPin_Timer_Elapsed(object? sender, ElapsedEventArgs e)
         {
             var a = (System.Timers.Timer)sender; //get timer handle
             AccessTry = false;

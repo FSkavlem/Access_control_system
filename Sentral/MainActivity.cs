@@ -52,15 +52,16 @@ namespace Sentral
                         AlarmEvent alarmEvent = JsonSerializer.Deserialize<AlarmEvent>(receivedString);
                         break;
                     case PackageIdentifier.CardInfo:
+
+                        break;
+                    case PackageIdentifier.PinValidation:
                         CardInfo cardInfo = JsonSerializer.Deserialize<CardInfo>(receivedString);
                         bool Validation = CheckUserPin(cardInfo);
 
                         ReturnCardComms queryReturn = new ReturnCardComms(Validation);
                         string jsonString = JsonSerializer.Serialize(queryReturn);
                         jsonString = ClassLibrary.Message.AddPackageIdentifier(PackageIdentifier.PinValidation, jsonString);
-                        complete = ClassLibrary.Message.SendString(ComSocket, jsonString,out error);
-                        break;
-                    case PackageIdentifier.RequestNumber:
+                        complete = ClassLibrary.Message.SendString(ComSocket, jsonString, out error);
                         break;
                 }
 
