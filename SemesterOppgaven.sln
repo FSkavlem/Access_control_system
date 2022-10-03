@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32126.317
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardReader", "SemesterOppgaven\CardReader.csproj", "{77E6A607-11DB-4A67-8F5F-D6383DF3636B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClassLibrary", "ClassLibrary\ClassLibrary.csproj", "{E65C53F6-5352-4DBD-AD91-325C47147DC9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sentral", "Sentral\Sentral.csproj", "{0812CADA-3F75-45C5-9717-DA91D6A8D233}"
@@ -24,14 +22,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{77E6A607-11DB-4A67-8F5F-D6383DF3636B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{77E6A607-11DB-4A67-8F5F-D6383DF3636B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{77E6A607-11DB-4A67-8F5F-D6383DF3636B}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{77E6A607-11DB-4A67-8F5F-D6383DF3636B}.Debug|x86.Build.0 = Debug|Any CPU
-		{77E6A607-11DB-4A67-8F5F-D6383DF3636B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{77E6A607-11DB-4A67-8F5F-D6383DF3636B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{77E6A607-11DB-4A67-8F5F-D6383DF3636B}.Release|x86.ActiveCfg = Release|Any CPU
-		{77E6A607-11DB-4A67-8F5F-D6383DF3636B}.Release|x86.Build.0 = Release|Any CPU
 		{E65C53F6-5352-4DBD-AD91-325C47147DC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E65C53F6-5352-4DBD-AD91-325C47147DC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E65C53F6-5352-4DBD-AD91-325C47147DC9}.Debug|x86.ActiveCfg = Debug|Any CPU

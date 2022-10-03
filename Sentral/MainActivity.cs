@@ -33,34 +33,32 @@ namespace Sentral
                 ThreadPool.QueueUserWorkItem(KommunikasjonMedEnKlient, ComSocket);
             }
         }
-        private static void KommunikasjonMedEnKlient(object? arg)
+        private static void KommunikasjonMedEnKlient(object arg)
         {
-            Socket ComSocket = arg as Socket;
+            Socket ComSocket = (Socket)arg;
             bool error = false;
             bool complete = false;
-            Central.SendString(ComSocket, PackageIdentifier.ServerACK, out error);
+            ClassLibrary.Message.SendString(ComSocket, PackageIdentifier.ServerACK, out error);
 
             while (!error)
             {
                 // receive data from connected socket.
-                string receivedString = Central.ReceiveString(ComSocket, out error);
-                string packageID = Central.GetPackageIdentifier(ref receivedString,out receivedString);
+                string receivedString = ClassLibrary.Message.ReceiveString(ComSocket, out error);
+                string packageID = ClassLibrary.Message.GetPackageIdentifier(ref receivedString,out receivedString);
 
                 switch (packageID)
                 {
                     case PackageIdentifier.AlarmEvent:
                         AlarmEvent alarmEvent = JsonSerializer.Deserialize<AlarmEvent>(receivedString);
-
                         break;
                     case PackageIdentifier.CardInfo:
-
                         CardInfo cardInfo = JsonSerializer.Deserialize<CardInfo>(receivedString);
                         bool Validation = CheckUserPin(cardInfo);
+
                         ReturnCardComms queryReturn = new ReturnCardComms(Validation);
                         string jsonString = JsonSerializer.Serialize(queryReturn);
-                        jsonString = Central.AddPackageIdentifier(PackageIdentifier.PinValidation, jsonString);
-                        complete = Central.SendString(ComSocket, jsonString,out error);
-
+                        jsonString = ClassLibrary.Message.AddPackageIdentifier(PackageIdentifier.PinValidation, jsonString);
+                        complete = ClassLibrary.Message.SendString(ComSocket, jsonString,out error);
                         break;
                     case PackageIdentifier.RequestNumber:
                         break;
@@ -94,6 +92,7 @@ namespace Sentral
         private static void SQLlogAlarm(AlarmLogEntry x)
         {
             //something something log alarm SQL, ID set bt SQL DB
+
         }
 
         private static void SQLlogAccessEntry(AccessLogEntry x)

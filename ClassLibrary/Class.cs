@@ -6,7 +6,7 @@ using System.Text.Json;
 namespace ClassLibrary
 {
     
-    public class Central
+    public class Message
     {
         public static string AddPackageIdentifier(string identifier, string aString) => identifier + aString;
         public static string GetPackageIdentifier(ref string? stringIn,out string stringOut)
@@ -34,7 +34,6 @@ namespace ClassLibrary
             }
             return answer;
         }
-
         public static bool SendString(Socket comSocket, string data, out bool error)
         {
             error = false;
@@ -50,12 +49,8 @@ namespace ClassLibrary
                 error = true;
                 return false;
             }
-
         }
-
-
     }
-
     public class Door
     {
         public int nodeNum { get; set; }
@@ -92,7 +87,7 @@ namespace ClassLibrary
         }
     }
     public class CardInfo
-    {   //generated default contructor
+    {   //generates default contructor
         public int CardID { get; set; }
         public string? PinEntered { get; set; }
         public int Number { get; set; }
@@ -105,31 +100,6 @@ namespace ClassLibrary
         public CardInfo LastCardUsed { get; set; }
         public DateTime? Time { get; set; }
     }
-    public class CardComms
-    {
-
-        public int CardID { get; set; }
-        public string? Pin { get; set; }
-        public int Number { get; set; }
-        public DateTime? Time { get; set; }
-        public bool Need_validation { get; set; }
-        public bool Alarm_bool { get; set; }
-        public int Alarm_type { get; set; }
-        public int Lastuser { get; set; }
-
-        public CardComms()  //contructor for communication from card reader to Central
-        {
-            CardID = 0;
-            Pin = "";
-            Time = null;
-            Number =0;
-            Alarm_bool = false;
-            Need_validation = false;
-            Alarm_type = 0;
-            Lastuser = 0;
-        }
-    }
-
     public class AlarmLogEntry
     {
         public User? LastUser { get; set; }
