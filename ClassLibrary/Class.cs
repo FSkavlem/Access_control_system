@@ -98,7 +98,7 @@ namespace ClassLibrary
         public const int SerialPortNotOpen = 1;
         public const int ResetAlarm = 2;
         public const int AlarmRaised = 3;
-        public const int PinValidationEvent = 4;
+        public const int PinVerified = 4;
         public const int DoorIsClosedButNotLocked = 5;
         public const int ResetAccessProcess = 6;
         public const int FourDigitsEntered = 7;
@@ -107,7 +107,7 @@ namespace ClassLibrary
         public const int SendAlarmEvent = 10;
         public const int TrafficOnTCPsocket = 11;
         public const int StartDoorTimer = 12;
-        public const int a = 13;
+        public const int DoorLocked = 13;
         public const int DoorClosed = 14;
 
 

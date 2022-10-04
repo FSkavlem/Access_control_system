@@ -60,9 +60,10 @@ namespace CardReaderForm
                                 AlarmEvent alarmEvent = new AlarmEvent { Alarm_type = alarm.Item2, Time = door.time, DoorNumber = door.nodeNum, LastUser = lastuser };
                                 sendClassAsJSON_String(PackageIdentifier.AlarmEvent, alarmEvent, ref comSocket);
                                 alarmSent = true;
+                                //burde fjerne hele Halt ved alarm systemet.
                                 break;
                             case States.ResetAlarm:
-                                alarmSent = false;
+                                alarmSent = false; //må finne ut at hvordan jeg skal resete, tenker at trafikk burde gå. når gjør den ikke fordi denne blir satt i annen state.
                                 break;
                             case States.AccessTry:
                                 int cardid = GetGlobalCardID();

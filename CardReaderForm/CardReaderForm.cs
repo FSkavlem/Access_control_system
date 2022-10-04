@@ -80,7 +80,6 @@ namespace CardReaderForm
             UpdateAlarmButton();
         }
 
-
         public void SetResetAlarm(bool x) => ResetAlarm = x;
         public bool GetResetAlarm() => ResetAlarm;
         public void SetCardInfo(CardInfo x) => CardinfoSent = x;
