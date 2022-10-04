@@ -2,10 +2,10 @@
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ClassLibrary
 {
-    
     public class Message
     {
         public static string AddPackageIdentifier(string identifier, string aString) => identifier + aString;
@@ -89,65 +89,116 @@ namespace ClassLibrary
     public class CardInfo
     {   //generates default contructor
         public int CardID { get; set; }
-        public string? PinEntered { get; set; }
-        public int Number { get; set; }
-        public DateTime? Time { get; set; }
+        public string PinEntered { get; set; }
+        public int DoorNr { get; set; }
+        public DateTime Time { get; set; }
     }
-    public static class AlarmType
+    public static class States
     {
+        public const int SerialPortNotOpen = 1;
+        public const int ResetAlarm = 2;
+        public const int AlarmRaised = 3;
+        public const int PinValidationEvent = 4;
+        public const int DoorIsClosedButNotLocked = 5;
+        public const int ResetAccessProcess = 6;
+        public const int FourDigitsEntered = 7;
+        public const int TrafficOnSerialPort = 8;
+        public const int AccessTry = 9;
+        public const int SendAlarmEvent = 10;
+        public const int TrafficOnTCPsocket = 11;
+        public const int StartDoorTimer = 12;
+        public const int a = 13;
+        public const int DoorClosed = 14;
+
+
+    }
+    public static class AlarmTypes
+    {
+        public const int NoAlarm = 0;
         public const int ForceDoor = 1;
         public const int DoorOpenTooLong = 2;
+        public const int GenericAlarm = 3;
+        public static string toString(this int x)
+        {
+            string a = string.Empty;
+            switch (x)
+            {
 
+                case 1:
+                    a = "Door forced";
+                    break;
+                case 2:
+                    a = "Door open to long";
+                    break;
+                case 3:
+                    a = "Generic Alarm";
+                    break;
+                default:
+                    break;
+            }
+            return a;
+        }
     }
 
     public class AlarmEvent
     {
-        public bool Alarm_bool { get; set; }
         public int Alarm_type { get; set; }
-        public CardInfo LastCardUsed { get; set; }
-        public DateTime? Time { get; set; }
+        public DateTime Time { get; set; }
+        public CardInfo LastUser { get; set; }
+        public int DoorNumber { get; set; }
     }
-    public class AlarmLogEntry
+    public class AlarmLogSQLEntry
     {
-        public User? LastUser { get; set; }
-        public int AlarmType { get; set; }
-        public DateTime? TimeStamp { get; set; }
-        public AlarmLogEntry(User? lastUser, int alarmType, DateTime? timeStamp)
-        {
-            LastUser = lastUser;
-            AlarmType = alarmType;
-            TimeStamp = timeStamp;
-        }
+        public User LastUser { get; set; }
+        public string AlarmType { get; set; }
+        public DateTime TimeStamp { get; set; }
+        public int DoorNumber { get; set; }
     }
     public static class PackageIdentifier
     {
         public const int Length = 6;
         public const string ServerACK = "100001";
         public const string AlarmEvent = "200001";
+        public const string ResetAlarm = "200002";
         public const string CardInfo = "300001";
         public const string RequestNumber = "400001";
         public const string PinValidation = "500001";
+
     }
 
-    public class AccessLogEntry
+    public class AccessLogEntrySQL
     {
+        public int DoorNr { get; set; }
         public User? User { get; set; }
         public DateTime? TimeStamp { get; set; }
         public bool AccessGranted { get; set; }
-        public AccessLogEntry(User? user, DateTime? timeStamp, bool accessGranted)
+        public AccessLogEntrySQL(User? user, DateTime? timeStamp, bool accessGranted, int doorNr)
         {
             User = user;
             TimeStamp = timeStamp;
             AccessGranted = accessGranted;
+            DoorNr = doorNr;
         }
+    }
+    public class AccessLogCardForm
+    {
+        public int CardID { get; set; }
+        public string PinEntered { get; set; }
+        public DateTime Time { get; set; }
+        public bool AccessGranted { get; set; }
+        public AccessLogCardForm(int cardID, string pinEntered, DateTime time, bool accessGranted)
+        {
+            CardID = cardID;
+            PinEntered = pinEntered;
+            Time = time;
+            AccessGranted = accessGranted;
+        }
+
     }
     public class ReturnCardComms   //contructor for communication from Central to cardReader
     {
         public bool Validation { get; set; }
-        public ReturnCardComms(bool x = false)  //bool x = false makes contructor optional and sets deafult to false
-        {
-            Validation = x;
-        }
+
     }
  
 }

@@ -4,15 +4,26 @@ using System.Text;
 using System.Diagnostics;
 using ClassLibrary;
 using System.Text.Json;
+using System.Runtime.CompilerServices;
+using System.Dynamic;
 
 namespace Sentral
 {
+    public delegate void UpdateFormAccesList(AccessLogEntrySQL x);
+    public delegate void UpdateFormAlarmList(AlarmLogSQLEntry x);
     public partial class MainActivity : Form
     {
-        object SQL_LOCK = new object();
+        public int AccessIDnumber;
+        public int AlarmIDnumber;
+        public static MainActivity mainform;
+
         public MainActivity()
         {
             InitializeComponent();
+            StartUIupdater();
+            AccessIDnumber = 0;
+            AlarmIDnumber = 0;
+            mainform = this;
             ThreadPool.QueueUserWorkItem(StartServer);
         }
 
@@ -30,10 +41,50 @@ namespace Sentral
                 // Write established comms to Output Window
                 Debug.WriteLine("Comm Established: {0}:{1}", ComSocket.RemoteEndPoint, ComSocket.LocalEndPoint);
                 // passes socket to other thread
-                ThreadPool.QueueUserWorkItem(KommunikasjonMedEnKlient, ComSocket);
+                ThreadPool.QueueUserWorkItem(TCPclient, ComSocket);
             }
         }
-        private static void KommunikasjonMedEnKlient(object arg)
+        private void StartUIupdater()
+        {
+            System.Windows.Forms.Timer UIupdateTimer;
+            UIupdateTimer = new System.Windows.Forms.Timer();
+            UIupdateTimer.Interval = 100;
+            UIupdateTimer.Tick += new EventHandler(Timer_Elapsed);
+            UIupdateTimer.Enabled = true;
+        }
+        private void Timer_Elapsed(object? sender, EventArgs e)
+        {
+            
+        }
+        private void UpdateAlarmListView(AlarmLogSQLEntry x)
+        {
+            AlarmIDnumber++;
+            string lastuser = string.Format("{0},{1}", x.LastUser.Etternavn, x.LastUser.Fornavn);
+            string[] row = {AlarmIDnumber.ToString(),
+                            x.AlarmType,
+                            lastuser,
+                            x.TimeStamp.ToString()};
+            ListViewItem listViewItem = new ListViewItem(row);
+            listview_alarm_log.Items.Add(listViewItem);
+        }
+        private void UpdateAccessListView(AccessLogEntrySQL x)
+        {   //should be from DB 
+            string a = string.Empty;
+            AccessIDnumber++;
+            if (x.AccessGranted) a = "Granted";
+            else a = "Denied";
+            string[] row = {AccessIDnumber.ToString(),
+                            x.User.CardID.ToString(), 
+                            x.User.Etternavn,
+                            x.User.Fornavn,
+                            x.DoorNr.ToString(),
+                            x.TimeStamp.ToString(),
+                            a};
+            ListViewItem listViewItem = new ListViewItem(row);
+            listview_access_log.Items.Add(listViewItem);
+        }
+        //TCP_CLIENT
+        private static void TCPclient(object arg)
         {
             Socket ComSocket = (Socket)arg;
             bool error = false;
@@ -42,41 +93,63 @@ namespace Sentral
 
             while (!error)
             {
-                // receive data from connected socket.
-                string receivedString = ClassLibrary.Message.ReceiveString(ComSocket, out error);
-                string packageID = ClassLibrary.Message.GetPackageIdentifier(ref receivedString,out receivedString);
-
-                switch (packageID)
+                
+                if(ComSocket.Available > 0) // receive data from connected socket if available
                 {
-                    case PackageIdentifier.AlarmEvent:
-                        AlarmEvent alarmEvent = JsonSerializer.Deserialize<AlarmEvent>(receivedString);
-                        break;
-                    case PackageIdentifier.CardInfo:
+                    string receivedString = ClassLibrary.Message.ReceiveString(ComSocket, out error);
+                    string packageID = ClassLibrary.Message.GetPackageIdentifier(ref receivedString, out receivedString);
 
-                        break;
-                    case PackageIdentifier.PinValidation:
-                        CardInfo cardInfo = JsonSerializer.Deserialize<CardInfo>(receivedString);
-                        bool Validation = CheckUserPin(cardInfo);
+                    switch (packageID)
+                    {
+                        case PackageIdentifier.AlarmEvent:
+                            AlarmEvent alarmEvent = JsonSerializer.Deserialize<AlarmEvent>(receivedString);
+                            AlarmLogger(alarmEvent);
+                            break;
+                        case PackageIdentifier.CardInfo:
 
-                        ReturnCardComms queryReturn = new ReturnCardComms(Validation);
-                        string jsonString = JsonSerializer.Serialize(queryReturn);
-                        jsonString = ClassLibrary.Message.AddPackageIdentifier(PackageIdentifier.PinValidation, jsonString);
-                        complete = ClassLibrary.Message.SendString(ComSocket, jsonString, out error);
-                        break;
+                            break;
+                        case PackageIdentifier.PinValidation:
+
+                            CardInfo cardInfo = JsonSerializer.Deserialize<CardInfo>(receivedString);
+                            User user = SQLrequestUser(cardInfo.CardID);
+                            bool validation = CheckUserPin(cardInfo,user);
+                            
+                            AccessLogEntrySQL accesslogEntry = new AccessLogEntrySQL(user, cardInfo.Time, validation,cardInfo.DoorNr);
+                            AccessLogger(accesslogEntry);
+
+                            ReturnCardComms queryReturn = new ReturnCardComms {Validation=validation};
+
+                            string jsonString = JsonSerializer.Serialize(queryReturn);
+                            jsonString = ClassLibrary.Message.AddPackageIdentifier(PackageIdentifier.PinValidation, jsonString);
+                            complete = ClassLibrary.Message.SendString(ComSocket, jsonString, out error);
+                            break;
+                    }
                 }
-
-                if (complete) break;
             }
             // Lukker kommunikasjonssokkel og viser info
             Debug.WriteLine("Comm Diconnected: {0}:{1}", ComSocket.RemoteEndPoint, ComSocket.LocalEndPoint);
             ComSocket.Close();
         }
+        private static void AlarmLogger(AlarmEvent alarmEvent)
+        {
+            string alarmtype = AlarmTypes.toString(alarmEvent.Alarm_type);
+            User user = SQLrequestUser(alarmEvent.LastUser.CardID);
+            AlarmLogSQLEntry alarmEntry = new AlarmLogSQLEntry { AlarmType = alarmtype, DoorNumber = alarmEvent.DoorNumber, LastUser = user, TimeStamp = alarmEvent.Time };
+            UpdateFormAlarmList x = new UpdateFormAlarmList(mainform.UpdateAlarmListView);
 
-        private static bool CheckUserPin(CardInfo data)
+            mainform.Invoke(x, alarmEntry);
+            SQLlogAlarm(alarmEntry);
+        }
+        private static void AccessLogger(AccessLogEntrySQL accesslogEntry)
+        {
+            UpdateFormAccesList x = new UpdateFormAccesList(mainform.UpdateAccessListView);
+            mainform.Invoke(x, accesslogEntry);
+            SQLlogAccessEntry(accesslogEntry);
+        }
+        private static bool CheckUserPin(CardInfo data, User user)
         {
             bool access;
-            User SQLqueryBruker = SQLrequestUser(data.CardID);
-            if (SQLqueryBruker.Pin == data.PinEntered)
+            if (user.Pin == data.PinEntered)
             {
                 access = true;
             }
@@ -84,19 +157,14 @@ namespace Sentral
             {
                 access = false;
             }
-
-            SQLlogAccessEntry(new AccessLogEntry(SQLqueryBruker,data.Time,access));
             return access;
         }
-
-
-        private static void SQLlogAlarm(AlarmLogEntry x)
+        private static void SQLlogAlarm(AlarmLogSQLEntry x)
         {
             //something something log alarm SQL, ID set bt SQL DB
 
         }
-
-        private static void SQLlogAccessEntry(AccessLogEntry x)
+        private static void SQLlogAccessEntry(AccessLogEntrySQL x)
         {
             //something something log access try from data to SQL, ID set bt SQL DB
         }

@@ -54,8 +54,10 @@
             this.Access_window = new System.Windows.Forms.Panel();
             this.listview_access_log = new System.Windows.Forms.ListView();
             this.access_id = new System.Windows.Forms.ColumnHeader();
-            this.Bruker_ID = new System.Windows.Forms.ColumnHeader();
             this.Card_number = new System.Windows.Forms.ColumnHeader();
+            this.bruker_etternavn = new System.Windows.Forms.ColumnHeader();
+            this.Bruker_Fornavn = new System.Windows.Forms.ColumnHeader();
+            this.Door = new System.Windows.Forms.ColumnHeader();
             this.access_time = new System.Windows.Forms.ColumnHeader();
             this.access_granted = new System.Windows.Forms.ColumnHeader();
             this.ButtonPanel.SuspendLayout();
@@ -188,7 +190,7 @@
             // radioButton6
             // 
             this.radioButton6.AutoSize = true;
-            this.radioButton6.Location = new System.Drawing.Point(116, 308);
+            this.radioButton6.Location = new System.Drawing.Point(117, 276);
             this.radioButton6.Name = "radioButton6";
             this.radioButton6.Size = new System.Drawing.Size(31, 19);
             this.radioButton6.TabIndex = 6;
@@ -199,7 +201,7 @@
             // radioButton5
             // 
             this.radioButton5.AutoSize = true;
-            this.radioButton5.Location = new System.Drawing.Point(116, 283);
+            this.radioButton5.Location = new System.Drawing.Point(117, 251);
             this.radioButton5.Name = "radioButton5";
             this.radioButton5.Size = new System.Drawing.Size(31, 19);
             this.radioButton5.TabIndex = 5;
@@ -210,7 +212,7 @@
             // radioButton4
             // 
             this.radioButton4.AutoSize = true;
-            this.radioButton4.Location = new System.Drawing.Point(116, 258);
+            this.radioButton4.Location = new System.Drawing.Point(117, 226);
             this.radioButton4.Name = "radioButton4";
             this.radioButton4.Size = new System.Drawing.Size(31, 19);
             this.radioButton4.TabIndex = 4;
@@ -221,7 +223,7 @@
             // radioButton3
             // 
             this.radioButton3.AutoSize = true;
-            this.radioButton3.Location = new System.Drawing.Point(79, 308);
+            this.radioButton3.Location = new System.Drawing.Point(80, 276);
             this.radioButton3.Name = "radioButton3";
             this.radioButton3.Size = new System.Drawing.Size(31, 19);
             this.radioButton3.TabIndex = 3;
@@ -232,7 +234,7 @@
             // radioButton2
             // 
             this.radioButton2.AutoSize = true;
-            this.radioButton2.Location = new System.Drawing.Point(79, 283);
+            this.radioButton2.Location = new System.Drawing.Point(80, 251);
             this.radioButton2.Name = "radioButton2";
             this.radioButton2.Size = new System.Drawing.Size(31, 19);
             this.radioButton2.TabIndex = 2;
@@ -243,7 +245,7 @@
             // radioButton1
             // 
             this.radioButton1.AutoSize = true;
-            this.radioButton1.Location = new System.Drawing.Point(79, 258);
+            this.radioButton1.Location = new System.Drawing.Point(80, 226);
             this.radioButton1.Name = "radioButton1";
             this.radioButton1.Size = new System.Drawing.Size(31, 19);
             this.radioButton1.TabIndex = 1;
@@ -280,19 +282,23 @@
             // 
             // id
             // 
-            this.id.Text = "Alarm ID";
+            this.id.Text = "ID";
+            this.id.Width = 40;
             // 
             // AlarmType
             // 
             this.AlarmType.Text = "Alarm type";
+            this.AlarmType.Width = 120;
             // 
             // last_user
             // 
             this.last_user.Text = "Last user";
+            this.last_user.Width = 300;
             // 
             // time
             // 
             this.time.Text = "Time";
+            this.time.Width = 100;
             // 
             // Access_window
             // 
@@ -308,8 +314,10 @@
             // 
             this.listview_access_log.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.access_id,
-            this.Bruker_ID,
             this.Card_number,
+            this.bruker_etternavn,
+            this.Bruker_Fornavn,
+            this.Door,
             this.access_time,
             this.access_granted});
             this.listview_access_log.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -326,22 +334,36 @@
             // access_id
             // 
             this.access_id.Text = "ID";
-            // 
-            // Bruker_ID
-            // 
-            this.Bruker_ID.Text = "Bruker ID";
+            this.access_id.Width = 40;
             // 
             // Card_number
             // 
             this.Card_number.Text = "Card number";
+            this.Card_number.Width = 100;
+            // 
+            // bruker_etternavn
+            // 
+            this.bruker_etternavn.Text = "Etternavn";
+            this.bruker_etternavn.Width = 130;
+            // 
+            // Bruker_Fornavn
+            // 
+            this.Bruker_Fornavn.Text = "Fornavn";
+            this.Bruker_Fornavn.Width = 130;
+            // 
+            // Door
+            // 
+            this.Door.Text = "Door";
             // 
             // access_time
             // 
-            this.access_time.Text = "Time";
+            this.access_time.Text = "Access Time";
+            this.access_time.Width = 150;
             // 
             // access_granted
             // 
             this.access_granted.Text = "Access Granted";
+            this.access_granted.Width = 100;
             // 
             // MainActivity
             // 
@@ -380,7 +402,7 @@
         private Panel Access_window;
         private ListView listview_access_log;
         private ColumnHeader access_id;
-        private ColumnHeader Bruker_ID;
+        private ColumnHeader Bruker_Fornavn;
         private ColumnHeader Card_number;
         private ColumnHeader access_time;
         private ColumnHeader access_granted;
@@ -395,5 +417,7 @@
         private RadioButton radioButton3;
         private RadioButton radioButton2;
         private RadioButton radioButton1;
+        private ColumnHeader bruker_etternavn;
+        private ColumnHeader Door;
     }
 }
