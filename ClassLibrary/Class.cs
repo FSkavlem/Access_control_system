@@ -71,9 +71,9 @@ namespace ClassLibrary
     }
     public class User
     {
-        public string? Fornavn { get; set; }
-        public string? Etternavn { get; set; }
-        public string? Pin { get; set; }     //string? means it can be null
+        public string Fornavn { get; set; }
+        public string Etternavn { get; set; }
+        public string Pin { get; set; }     //string? means it can be null
         public int CardID { get; set; }
         public DateTime? EndDato { get; set; }
 
