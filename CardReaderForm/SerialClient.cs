@@ -7,16 +7,19 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Xml.Serialization;
 
 namespace CardReaderForm
 {
+    public delegate void SetPinDigits(char x);
+    public delegate SerialPort GetSerialPort();
     class SerialClient
     {
         public static bool AccessTry;
-        public static bool Alarm;
-        public static bool ResetProccess;
-
+        public static bool ResetProccess { get; set; }
         public static CardReaderForm mainform;
+        public static SerialPort sp;
+
         public void RunCLient(CardReaderForm f)
         {
             mainform = f;
@@ -26,42 +29,46 @@ namespace CardReaderForm
             SerialThread.IsBackground = true;
             SerialThread.Start();
         }
+
         private static void StartSerialClient()
         {
+            
             Door door = new Door();
             bool pinValidationEvent = false ;
             bool resetAlarm = false; ;
             bool doorTimerStarted = false;
-
+            bool keyPadChar = false;
+            bool FormCardSwipe = false;
+            string KeyPadString = string.Empty;
+            SerialPort? serialPort = new SerialPort();
+            sp = serialPort;
             AccessTry = false;
             ResetProccess = false;
 
             System.Timers.Timer EnterPinTimer = new System.Timers.Timer(); 
             System.Timers.Timer DoorTimer = new System.Timers.Timer();
-
             SetupTimers(ref DoorTimer, ref EnterPinTimer);
 
-            SerialPort? serialPort = new SerialPort();
+            
             while (true) //MAIN LOOP
             {
                 //get public vars
-                pinValidationEvent = GetPublicPinValidation();
-                resetAlarm = GetPublicResetAlarm();
-
-
+                UpdateGlobalVars();
                 if (!serialPort.IsOpen) Statemachine(States.SerialPortNotOpen);                                 //Serial port is not open
+                if (serialPort.BytesToRead > 0) Statemachine(States.TrafficOnSerialPort);                       //traffic is available on serialCom
+                //grunnen til annen faenskap er treghet mellom på serialcom!!
                 if (door.DoorLocked_e5 & door.DoorOpen_e6) Statemachine(States.DoorLocked);                     //door is locked, but opens from app
-                if (resetAlarm) Statemachine(States.ResetAlarm);                                                //reset alarm
+                if (resetAlarm) Statemachine(States.ResetAlarm);    
                 if (pinValidationEvent) Statemachine(States.PinVerified);                                       //pin is verified
                 if (ResetProccess) Statemachine(States.ResetAccessProcess);                                     //Card is recorded with and 4 pin entered
+                if (FormCardSwipe) Statemachine(States.FormCardSwipe);
+                if (AccessTry & keyPadChar & door.enteredPin.Length <= 4) Statemachine(States.KeyPadPressed);
                 if (door.DoorOpen_e6 & !doorTimerStarted) Statemachine(States.StartDoorTimer);                  //door is open, timer starts
                 if (!door.DoorOpen_e6) Statemachine(States.DoorClosed);                                         //door is closed
                 if (!door.DoorOpen_e6 & !door.DoorLocked_e5) Statemachine(States.DoorIsClosedButNotLocked);     //door is closed but not locked
                 if (door.enteredPin.Length >= 4 & AccessTry) Statemachine(States.FourDigitsEntered);            //four digits of pin is entered
                 if (door.AccessTry_e4 & !AccessTry) Statemachine(States.AccessTry);                             //a card has been recorded, starts logging of pin entry
-                if (serialPort.BytesToRead > 0) Statemachine(States.TrafficOnSerialPort);                       //traffic is available on serialCom
-
-
+               
                 void Statemachine(int currentstate)
                 {
                     switch (currentstate)
@@ -71,7 +78,7 @@ namespace CardReaderForm
                             break;
 
                         case States.ResetAlarm:
-                            RaiseAlarmEvent(false, ClassLibrary.AlarmTypes.NoAlarm);
+                            SetGlobalAlarm(false, AlarmTypes.NoAlarm);
                             WipeAlarm(ref serialPort);
                             break;
 
@@ -87,10 +94,12 @@ namespace CardReaderForm
 
                         case States.ResetAccessProcess:
                             EnterPinTimer.Interval = 45000;
+                            SetGlobalFromSwipeCard(false);
                             door.AccessTry_e4 = false;
                             updateGlobalDoor(door);
-                            ToggleCheckBoxesInSimSim(4, false, ref serialPort);
                             ResetProccess = false;
+                            ToggleCheckBoxesInSimSim(4, false, ref serialPort);
+                            UpdateGlobalVars();
                             break;
 
                         case States.FourDigitsEntered:
@@ -107,9 +116,11 @@ namespace CardReaderForm
 
                         case States.AccessTry:
                             EnterPinTimer.Start();
+                            PoolDoor(ref serialPort);
                             door.enteredPin = string.Empty;
                             AccessTry = true;
                             break;
+
                         case States.StartDoorTimer:
                             DoorTimer.Start();
                             doorTimerStarted = true;
@@ -118,12 +129,68 @@ namespace CardReaderForm
                             DoorTimer.Stop();
                             doorTimerStarted = false;
                             break;
+                        case States.KeyPadPressed:
+                            door.enteredPin += KeyPadString;
+                            updateGlobalDoor(door);
+                            break;
+                        case States.FormCardSwipe:
+                            door.AccessTry_e4 = true;
+                            ToggleCheckBoxesInSimSim(4, true, ref serialPort);
+                            break;
                         default:
                             break;
                     }
+                    
+                }
+                void UpdateGlobalVars()
+                {
+                    pinValidationEvent = GetPublicPinValidation();
+                    resetAlarm = GetPublicResetAlarm();
+                    keyPadChar = GetPublicKeypadChar(out KeyPadString);
+                    FormCardSwipe = GetPublicCardFormSwipe();
                 }
                 Thread.Sleep(20);
+
             }
+        }
+
+        private static void SetGlobalFromSwipeCard(bool x)
+        {
+            try
+            {
+                mainform.Invoke(new SetCardSwipeForm(mainform.SetCardSwipeForm), x); ;
+            }
+            catch (Exception)
+            {
+            }
+        }      
+        private static bool GetPublicCardFormSwipe()
+        {
+            try
+            {
+                bool a = (bool)mainform.Invoke(new GetCardSwipeForm(mainform.GetCardSwipeForm));
+                return a;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        private static bool GetPublicKeypadChar(out string keyPadString)
+        {
+            try
+            {
+                GetKeyPadChar getKeypad = new GetKeyPadChar(mainform.GetKeyPadChar);
+                Tuple<bool, string> x = (Tuple<bool, string>)mainform.Invoke(getKeypad);
+                keyPadString = x.Item2;
+                return (bool)x.Item1;
+            }
+            catch (Exception)
+            {
+                keyPadString = "";
+                return false;
+            }
+
         }
         private static void SetupTimers(ref System.Timers.Timer doorTimer,ref System.Timers.Timer enterPinTimer)
         {
@@ -140,12 +207,17 @@ namespace CardReaderForm
             SetResetAlarm setResetAlarm = new SetResetAlarm(mainform.SetResetAlarm);
             ToggleCheckBoxesInSimSim(7, false, ref serialPort);
             mainform.Invoke(setResetAlarm, false);
-            Alarm = false;
         }
         private static void updateGlobalDoor(Door door)
         {  //pass current door status to main thread
-            SetPublicDoor setPublicDoor = new SetPublicDoor(mainform.SetPublicDoor);
-            mainform.Invoke(setPublicDoor, door); 
+            try
+            {
+                SetPublicDoor setPublicDoor = new SetPublicDoor(mainform.SetPublicDoor);
+                mainform.Invoke(setPublicDoor, door);
+            }
+            catch (Exception)
+            {
+            }
         }
         private static void LockDoor(ref SerialPort serialPort)
         {
@@ -174,10 +246,14 @@ namespace CardReaderForm
             string parseString = string.Format("$O{0}{1}", n, temp);
             serialPort.Write(parseString);
         }
+        private static void PoolDoor(ref SerialPort serialPort)
+        {
+            serialPort.Write("$R");
+        }
         private static void Doortimer_Timer_Elapsed(object? sender, ElapsedEventArgs e)
         {
             var a = (System.Timers.Timer)sender; //get timer handle
-            RaiseAlarmEvent(true, AlarmTypes.DoorOpenTooLong);
+            SetGlobalAlarm(true, AlarmTypes.DoorOpenTooLong);
             a.Stop();
         }
         private static void EnterPin_Timer_Elapsed(object? sender, ElapsedEventArgs e)
@@ -199,7 +275,7 @@ namespace CardReaderForm
             serialPort.ReadTimeout = 10000;
             serialPort.Open();
         }
-        private static string serial_data_received(ref SerialPort temp)
+        static string serial_data_received(ref SerialPort temp)
         {
             byte[] buffer = new byte[65];
             temp.Read(buffer, 0, 65);
@@ -239,14 +315,13 @@ namespace CardReaderForm
             door.AccessTry_e4 = arr[4];
             door.DoorLocked_e5 = arr[5];
             door.DoorOpen_e6 = arr[6];
-            if (arr[7]) RaiseAlarmEvent(true, ClassLibrary.AlarmTypes.GenericAlarm);
-            if (int.Parse(result[6]) > 500) RaiseAlarmEvent(true, AlarmTypes.ForceDoor);
+            if (arr[7]) SetGlobalAlarm(true, ClassLibrary.AlarmTypes.GenericAlarm);
+            if (int.Parse(result[6]) > 500) SetGlobalAlarm(true, AlarmTypes.ForceDoor);
         }
-        private static void RaiseAlarmEvent(bool x, int y)
+        private static void SetGlobalAlarm(bool x, int y)
         {
             SetAlarm setAlarm = new SetAlarm(mainform.SetAlarm);
             mainform.Invoke(setAlarm, x, y);
-            Alarm = true;
         }
         private static void KeyPadStorage(ref Door door)
         {
@@ -255,7 +330,27 @@ namespace CardReaderForm
             if (door.KeyPad[2]) door.enteredPin += "2";
             if (door.KeyPad[3]) door.enteredPin += "3";
         }
-        private static bool GetPublicPinValidation() => (bool)mainform.Invoke(new GetPinValidation(mainform.GetPinValidation));
-        private static bool GetPublicResetAlarm() => (bool)mainform.Invoke(new GetResetAlarm(mainform.GetResetAlarm));
+        private static bool GetPublicPinValidation()
+        {
+            try
+            {
+               return (bool)mainform.Invoke(new GetPinValidation(mainform.GetPinValidation));
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        } 
+        private static bool GetPublicResetAlarm()
+        {
+            try
+            {
+                return (bool)mainform.Invoke(new GetResetAlarm(mainform.GetResetAlarm));
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
     }
 }

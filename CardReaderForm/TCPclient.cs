@@ -60,10 +60,10 @@ namespace CardReaderForm
                                 AlarmEvent alarmEvent = new AlarmEvent { Alarm_type = alarm.Item2, Time = door.time, DoorNumber = door.nodeNum, LastUser = lastuser };
                                 sendClassAsJSON_String(PackageIdentifier.AlarmEvent, alarmEvent, ref comSocket);
                                 alarmSent = true;
-                                //burde fjerne hele Halt ved alarm systemet.
+                                SetGlobalResetAlarm(true);
                                 break;
                             case States.ResetAlarm:
-                                alarmSent = false; //må finne ut at hvordan jeg skal resete, tenker at trafikk burde gå. når gjør den ikke fordi denne blir satt i annen state.
+                                alarmSent = false; 
                                 break;
                             case States.AccessTry:
                                 int cardid = GetGlobalCardID();
@@ -95,12 +95,14 @@ namespace CardReaderForm
                             default:
                                 break;
                         }
+                        Thread.Sleep(20);
                     }
                 }
              Thread.Sleep(1000); //Wait 1000MS before trying to reconnect
             }
         }
 
+        private void SetGlobalResetAlarm(bool x) => mainform.Invoke(new SetResetAlarm(mainform.SetResetAlarm),x);
         private int GetGlobalCardID() => (int)mainform.Invoke(new GetCardID(mainform.getCardIDfromForm));
         private void SetGlobalPinValidation(ReturnCardComms? returnCardComms)
         {

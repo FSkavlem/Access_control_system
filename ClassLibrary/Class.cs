@@ -109,7 +109,8 @@ namespace ClassLibrary
         public const int StartDoorTimer = 12;
         public const int DoorLocked = 13;
         public const int DoorClosed = 14;
-
+        public const int KeyPadPressed = 15;
+        public const int FormCardSwipe = 16;
 
     }
     public static class AlarmTypes
