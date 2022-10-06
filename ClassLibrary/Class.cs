@@ -60,9 +60,9 @@ namespace ClassLibrary
         public bool DoorLocked_e5 { get; set; } = false;
         public bool DoorOpen_e6 { get; set; } = false;
         public bool Alarm_e7 { get; set; } = false;
-        public bool DoorForcedOpen { get; set; } = false;
         public string enteredPin { get; set; }
-       
+        public int DoorForce { get; set; }
+
         public Door()
         {
             enteredPin = "";
@@ -96,18 +96,26 @@ namespace ClassLibrary
     public static class States
     {
         public const int SerialPortNotOpen = 1;
+        public const int DoorIsClosedButNotLocked = 5;
+        public const int TrafficOnSerialPort = 8;
+        public const int GenericAlarmFromDoor = 17;
+        public const int ForceAlarmFromDoor = 18;
+        public const int LockDoor = 13;
+        public const int OpenDoor = 14;
+        public const int StartDoorTimer = 12;
+        public const int StopDoorTimer = 19;
+
         public const int ResetAlarm = 2;
         public const int AlarmRaised = 3;
         public const int PinVerified = 4;
-        public const int DoorIsClosedButNotLocked = 5;
+        
         public const int ResetAccessProcess = 6;
         public const int FourDigitsEntered = 7;
-        public const int TrafficOnSerialPort = 8;
+        
         public const int AccessTry = 9;
         public const int SendAlarmEvent = 10;
         public const int TrafficOnTCPsocket = 11;
-        public const int StartDoorTimer = 12;
-        public const int DoorLocked = 13;
+        
         public const int DoorClosed = 14;
         public const int KeyPadPressed = 15;
         public const int FormCardSwipe = 16;
