@@ -11,6 +11,7 @@ namespace Sentral
 {
     public delegate void UpdateFormAccesList(AccessLogEntrySQL x);
     public delegate void UpdateFormAlarmList(AlarmLogSQLEntry x);
+    public delegate void KillThread(Thread x);
     public partial class MainActivity : Form
     {
         public int AccessIDnumber;
@@ -41,9 +42,22 @@ namespace Sentral
                 // Write established comms to Output Window
                 Debug.WriteLine("Comm Established: {0}:{1}", ComSocket.RemoteEndPoint, ComSocket.LocalEndPoint);
                 // passes socket to other thread
-                ThreadPool.QueueUserWorkItem(TCPclient, ComSocket);
+                if (ComSocket.IsBound)
+                {
+                    Thread TCPThread = new Thread(TCPclient);
+                    TCPThread.Name = "TCPclientThread";
+                    TCPThread.IsBackground = true;
+                    TCPThread.Start(ComSocket);
+                    //ThreadPool.QueueUserWorkItem(TCPclient, ComSocket);
+                }
+                //must close TCP CLIENT
+                //ThreadPool.QueueUserWorkItem(SQLclient, this);
             }
         }
+        private void KillThread(Thread x)
+        {
+            x.Join(); //er hERR!! prøver å drepe thread fra client
+        } 
         private void StartUIupdater()
         {
             System.Windows.Forms.Timer UIupdateTimer;
@@ -83,21 +97,25 @@ namespace Sentral
             ListViewItem listViewItem = new ListViewItem(row);
             listview_access_log.Items.Add(listViewItem);
         }
+        private static void SQLclient(object arg)
+        {
+
+        }
+
         //TCP_CLIENT
         private static void TCPclient(object arg)
         {
             Socket ComSocket = (Socket)arg;
             bool error = false;
             bool complete = false;
-            ClassLibrary.Message.SendString(ComSocket, PackageIdentifier.ServerACK, out error);
+            Messages.SendString(ComSocket, PackageIdentifier.ServerACK, out error);
 
-            while (!error)
+            while (ComSocket.Connected)
             {
-                
                 if(ComSocket.Available > 0) // receive data from connected socket if available
                 {
-                    string receivedString = ClassLibrary.Message.ReceiveString(ComSocket, out error);
-                    string packageID = ClassLibrary.Message.GetPackageIdentifier(ref receivedString, out receivedString);
+                    string receivedString = Messages.ReceiveString(ComSocket, out error);
+                    string packageID = Messages.GetPackageIdentifier(ref receivedString, out receivedString);
 
                     switch (packageID)
                     {
@@ -105,8 +123,8 @@ namespace Sentral
                             AlarmEvent alarmEvent = JsonSerializer.Deserialize<AlarmEvent>(receivedString);
                             AlarmLogger(alarmEvent);
                             break;
-                        case PackageIdentifier.CardInfo:
-
+                        case PackageIdentifier.ClosingDown:
+                            KillMySelf(ComSocket);
                             break;
                         case PackageIdentifier.PinValidation:
 
@@ -120,16 +138,25 @@ namespace Sentral
                             ReturnCardComms queryReturn = new ReturnCardComms {Validation=validation};
 
                             string jsonString = JsonSerializer.Serialize(queryReturn);
-                            jsonString = ClassLibrary.Message.AddPackageIdentifier(PackageIdentifier.PinValidation, jsonString);
-                            complete = ClassLibrary.Message.SendString(ComSocket, jsonString, out error);
+                            jsonString = Messages.AddPackageIdentifier(PackageIdentifier.PinValidation, jsonString);
+                            complete = Messages.SendString(ComSocket, jsonString, out error);
                             break;
                     }
                 }
             }
+            KillMySelf(ComSocket);
+        }
+
+        private static void KillMySelf(Socket ComSocket)
+        {
             // Lukker kommunikasjonssokkel og viser info
             Debug.WriteLine("Comm Diconnected: {0}:{1}", ComSocket.RemoteEndPoint, ComSocket.LocalEndPoint);
             ComSocket.Close();
+            ComSocket.Dispose();
+            Thread.Sleep(100);
+            mainform.Invoke(new KillThread(mainform.KillThread), Thread.CurrentThread); //kill my self
         }
+
         private static void AlarmLogger(AlarmEvent alarmEvent)
         {
             string alarmtype = AlarmTypes.toString(alarmEvent.Alarm_type);
@@ -144,7 +171,6 @@ namespace Sentral
         {
             UpdateFormAccesList x = new UpdateFormAccesList(mainform.UpdateAccessListView);
             mainform.Invoke(x, accesslogEntry);
-            SQLlogAccessEntry(accesslogEntry);
         }
         private static bool CheckUserPin(CardInfo data, User user)
         {
@@ -168,7 +194,6 @@ namespace Sentral
         {
             //something something log access try from data to SQL, ID set bt SQL DB
         }
-
         private static User SQLrequestUser(int cardID)
         {
             //Get user from SQL DB in accordance with cardID

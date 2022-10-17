@@ -5,6 +5,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
@@ -12,93 +13,112 @@ using ClassLibrary;
 
 namespace CardReaderForm
 {
-    public delegate void DoorAlarms(object sender, DoorAlarmEventArgs e);
-    public delegate void setAlarmBool(bool x);
+   public delegate void DoorAlarms(object sender, DoorAlarmEventArgs e);
+   public delegate void DoorConnectStatus(object sender, bool x);
     class SerialClient
     {
         public static CardReaderForm mainform;
         public static SerialClient serialClient;
-        public static SerialPort serialPort;
+        public static SerialPort serialPort = new SerialPort();
         public Door doorStatus;
         public event DoorAlarms NewAlarmEvent;
+        public event EventHandler DoorTimerExpired;
+        public event EventHandler DoorConnectStatus;
+        //must close SerialClient
         public bool alarmOn { get; set; }
-
-        public void RunCLient(CardReaderForm f)
+        bool Opendoor{ get; set; }
+        public static bool LostConnection { get; set; }
+        System.Timers.Timer AlarmTimer;
+        public void RunCLient(CardReaderForm f, string ComPortName)
         {
             mainform = f;
-            ThreadStart ts = new ThreadStart(StartSerialClient);
-            Thread SerialThread = new Thread(ts);
+            Thread SerialThread = new Thread(StartSerialClient);
             SerialThread.Name = "SerialclientThread";
             SerialThread.IsBackground = true;
-            SerialThread.Start();
+            SerialThread.Start(ComPortName);
         }
-        private void StartSerialClient()
+        private void StartSerialClient(object arg)
         {
+            string comportname = (string)arg;
             System.Timers.Timer PollingTimer = new System.Timers.Timer();
             System.Timers.Timer DoorTimer = new System.Timers.Timer();
-            System.Timers.Timer AlarmTimer = new System.Timers.Timer();
+            AlarmTimer = new System.Timers.Timer();
 
             SetupTimers(ref PollingTimer, 3000, true, true);
-            SetupTimers(ref DoorTimer, 30000, false, false);
+            SetupTimers(ref DoorTimer, 60000, false, false);
             SetupTimers(ref AlarmTimer, 6000, false, false);
             PollingTimer.Elapsed += new ElapsedEventHandler(PollingTimer_Timer_Elapsed);
             DoorTimer.Elapsed += new ElapsedEventHandler(Doortimer_Timer_Elapsed);
             AlarmTimer.Elapsed += new ElapsedEventHandler(AlarmTimer_Timer_Elapsed);
 
+            mainform.OpenDoorEvent += Mainform_OpenDoorEvent;
+            serialPort.ErrorReceived += SerialPort_ErrorReceived;
+
             doorStatus = new Door();
+            bool serialportHasbeenOpened = false;
+            Opendoor = false;
+            
             alarmOn = false;
+            LostConnection = false;
             serialClient = this;
             serialPort = new SerialPort();
 
             //SetupTimers(ref DoorTimer, 200, ref PollingTimer, 3000);   //will poll door every 3s.
-            
-
-            bool Opendoor = false;
-
-
+        
             while (true)
             {
-                UpdateGlobalVars();
-                if (!serialPort.IsOpen) Statemachine(States.SerialPortNotOpen);
-                if (serialPort.BytesToRead > 0) Statemachine(States.TrafficOnSerialPort);
+                if (!serialPort.IsOpen & !serialportHasbeenOpened) Statemachine(States.SerialPortNotOpen);
+                if (!serialPort.IsOpen & serialportHasbeenOpened) Statemachine(States.LostConnection);
+                if (serialPort.IsOpen)
+                {
+                    if (serialPort.BytesToRead > 0) Statemachine(States.TrafficOnSerialPort);
+                }
                 //---------Alarms-------
                 if (doorStatus.Alarm_e7) Statemachine(States.GenericAlarmFromDoor);
                 if (doorStatus.DoorForce > 500) Statemachine(States.ForceAlarmFromDoor);
                 if (doorStatus.DoorOpen_e6 & doorStatus.DoorLocked_e5) Statemachine(States.ForceAlarmFromDoor);
                 //---------Alarms-------
-                if (Opendoor) Statemachine(States.LockDoor);
+                if (Opendoor) Statemachine(States.OpenDoor);
+                if (!doorStatus.DoorOpen_e6 & !doorStatus.DoorLocked_e5) Statemachine(States.DoorIsClosedButNotLocked);
                 if (doorStatus.DoorOpen_e6) Statemachine(States.StartDoorTimer);
                 if (!doorStatus.DoorOpen_e6) Statemachine(States.StopDoorTimer);
-                if (!doorStatus.DoorOpen_e6 & !doorStatus.DoorLocked_e5) Statemachine(States.DoorIsClosedButNotLocked);
-                
+
+                //checkbox true door open=> door.open = true, checkbox false door closed =door.open = false
+                //checkbox true lock closed=> door.locked = true, checkbox false unlocked closed=> door.locked = false
             }
-            
-            void UpdateGlobalVars()
-            {
-                Opendoor = GetOpenDoorBool();
-            }
+
             void Statemachine(int states)
             {
                 switch (states)
                 {
                     case States.SerialPortNotOpen:
-                        connect2Serial("COM20",19200);
+                        connect2Serial(comportname,19200);
+                        serialportHasbeenOpened = true;
+                        break;
+                    case States.LostConnection:
+                        serialportHasbeenOpened = false;
+                        LostConnection = false;
+                        DoorConnectStatus?.Invoke(false, new EventArgs());
                         break;
                     case States.TrafficOnSerialPort:
+                        DoorConnectStatus?.Invoke(true, new EventArgs());
                         string str = serial_data_received();  //will only take 65 byte at a time so only one send at the time will be handled   
                         doorStatus = DecompileSerialString(str);//update current door status
                         updateGlobalDoor(doorStatus);
                         break;
                     case States.GenericAlarmFromDoor:
-                        SetGlobalAlarm(ref AlarmTimer, AlarmTypes.GenericAlarm);
+                        SetGlobalAlarm(AlarmTypes.GenericAlarm);
                         break;
                     case States.ForceAlarmFromDoor:
-                        SetGlobalAlarm(ref AlarmTimer, AlarmTypes.ForceDoor);
+                        SetGlobalAlarm(AlarmTypes.ForceDoor);
                         break;
                     case States.OpenDoor:
                         UnlockDoor();
+                        OpenDoor();
                         doorStatus.DoorLocked_e5 = false;
-                        updateGlobalDoor(doorStatus);
+                        doorStatus.DoorOpen_e6 = true; 
+                        Opendoor = false;
+                        //updateGlobalDoor(doorStatus);
                         break;
                     case States.DoorIsClosedButNotLocked:
                         LockDoor();
@@ -106,10 +126,10 @@ namespace CardReaderForm
                         updateGlobalDoor(doorStatus);
                         break;
                     case States.StartDoorTimer:
-                        DoorTimer.Start();
+                        DoorTimer.Enabled = true;
                         break;
                     case States.StopDoorTimer:
-                        DoorTimer.Stop();
+                        DoorTimer.Enabled = false;
                         break;
 
                     default:
@@ -119,11 +139,20 @@ namespace CardReaderForm
             }
         }
 
-        private void SetGlobalAlarm(ref System.Timers.Timer alarmTimer, int x)
+        private void SerialPort_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
+        {
+            var a = 1;
+        }
+
+        private void OpenDoor() => ToggleCheckBoxesInSimSim(6, true);
+
+        private void Mainform_OpenDoorEvent(bool x) => Opendoor = x;
+ 
+        private void SetGlobalAlarm(int x)
         {
             if (!alarmOn)
             {
-                alarmTimer.Start();
+                AlarmTimer.Start();
                 TurnOffAlarmSIMSIM();
                 doorStatus.Alarm_e7 = false;
                 DoorAlarms doorAlarms = NewAlarmEvent;
@@ -169,24 +198,11 @@ namespace CardReaderForm
             door.KeyPad = new bool[] { arr[0], arr[1], arr[2], arr[3] };
             door.AccessTry_e4 = arr[4];
             door.DoorLocked_e5 = arr[5];
-            door.DoorOpen_e6 = arr[6];
+            door.DoorOpen_e6 = arr[6]; //checkbox true door open, checkbox false door closed
             door.Alarm_e7 = arr[7];
             door.DoorForce = int.Parse(result[6]);
-
             return door;
         
-        }
-        private static bool GetOpenDoorBool()
-        {
-            try
-            {
-                bool a = (bool)mainform.Invoke(new GetOpenDoorBool(mainform.GetOpenDoorBool));
-                return a;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
         }
         private static bool[] GetBoolArrayFromString(string v)
         {
@@ -222,7 +238,9 @@ namespace CardReaderForm
             //adds an event when data is received from serialPort, stupid dont do it
             //serialPort.DataReceived += new SerialDataReceivedEventHandler(serial_data_received);
             serialPort.ReadTimeout = 1000;
+            serialPort.WriteTimeout = 2000;
             serialPort.Open();
+
         }
         private static void SetupTimers(ref System.Timers.Timer x,int interval, bool autoreset, bool start)
         {
@@ -234,9 +252,9 @@ namespace CardReaderForm
         private static void Doortimer_Timer_Elapsed(object? sender, ElapsedEventArgs e)
         {
             var a = (System.Timers.Timer)sender; //get timer handle
-            //SetGlobalAlarm(true, AlarmTypes.DoorOpenTooLong);
-            a.Stop();
-        }
+            a.Enabled = false;
+            serialClient.SetGlobalAlarm(AlarmTypes.DoorOpenTooLong);
+        }   
         private static void AlarmTimer_Timer_Elapsed(object? sender, ElapsedEventArgs e)
         {
             //UNSAFE
@@ -246,7 +264,20 @@ namespace CardReaderForm
         }
         private static void PollDoor()
         {
-            serialPort.Write("$R");
+            try
+            {
+                serialPort.Write("$R");
+            }
+            catch (Exception)
+            {
+                if (serialPort.IsOpen)
+                {
+                    LostConnection = true;
+                    serialPort.Close();
+                    serialPort.Dispose();
+                }
+            }
+
         }
     }
     public class DoorAlarmEventArgs : EventArgs

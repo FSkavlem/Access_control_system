@@ -91,7 +91,7 @@
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(200, 44);
             this.button6.TabIndex = 9;
-            this.button6.Text = "button6";
+            this.button6.Text = "Open Folder";
             this.button6.UseVisualStyleBackColor = true;
             // 
             // button5
@@ -102,7 +102,7 @@
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(200, 44);
             this.button5.TabIndex = 8;
-            this.button5.Text = "button5";
+            this.button5.Text = "Exit";
             this.button5.UseVisualStyleBackColor = true;
             // 
             // panel3
@@ -151,7 +151,7 @@
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(200, 44);
             this.button2.TabIndex = 5;
-            this.button2.Text = "button2";
+            this.button2.Text = "Generate Alarmlog";
             this.button2.UseVisualStyleBackColor = true;
             // 
             // button1
@@ -162,7 +162,7 @@
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(200, 44);
             this.button1.TabIndex = 1;
-            this.button1.Text = "button1";
+            this.button1.Text = "Generate Access Log";
             this.button1.UseVisualStyleBackColor = true;
             // 
             // panel1

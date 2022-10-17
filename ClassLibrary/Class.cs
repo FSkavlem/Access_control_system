@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -6,14 +7,24 @@ using System.Text.Json.Serialization;
 
 namespace ClassLibrary
 {
-    public class Message
+    public class Messages
     {
         public static string AddPackageIdentifier(string identifier, string aString) => identifier + aString;
         public static string GetPackageIdentifier(ref string? stringIn,out string stringOut)
         {
-            string temp= stringIn.Substring(0, PackageIdentifier.Length);
-            stringOut = stringIn.Remove(0, PackageIdentifier.Length);    
-            return temp;
+            if (stringIn != string.Empty)
+            {
+                string temp = stringIn.Substring(0, PackageIdentifier.Length);
+                stringOut = stringIn.Remove(0, PackageIdentifier.Length);
+                return temp;
+            }
+            else
+            {
+                stringOut = string.Empty;
+                return string.Empty;
+            }
+
+
         }
         public static string ReceiveString(Socket comSocket, out bool error)
         {
@@ -57,7 +68,7 @@ namespace ClassLibrary
         public DateTime time { get; set; }
         public bool[] KeyPad { get; set; }
         public bool AccessTry_e4 { get; set; } = false;
-        public bool DoorLocked_e5 { get; set; } = false;
+        public bool DoorLocked_e5 { get; set; } = true;
         public bool DoorOpen_e6 { get; set; } = false;
         public bool Alarm_e7 { get; set; } = false;
         public string enteredPin { get; set; }
@@ -104,6 +115,7 @@ namespace ClassLibrary
         public const int OpenDoor = 14;
         public const int StartDoorTimer = 12;
         public const int StopDoorTimer = 19;
+        public const int LostConnection = 20;
 
         public const int ResetAlarm = 2;
         public const int AlarmRaised = 3;
@@ -167,11 +179,13 @@ namespace ClassLibrary
     {
         public const int Length = 6;
         public const string ServerACK = "100001";
+        public const string ClosingDown = "100002";
         public const string AlarmEvent = "200001";
         public const string ResetAlarm = "200002";
         public const string CardInfo = "300001";
         public const string RequestNumber = "400001";
         public const string PinValidation = "500001";
+
 
     }
 

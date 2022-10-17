@@ -55,6 +55,10 @@
             this.button_cardreader = new System.Windows.Forms.Button();
             this.checkBox_cardonreader = new System.Windows.Forms.CheckBox();
             this.label6 = new System.Windows.Forms.Label();
+            this.cbComPort = new System.Windows.Forms.ComboBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label_connectedTcp = new System.Windows.Forms.Label();
+            this.label_connectedSerial = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // listview_access_log
@@ -164,7 +168,7 @@
             // 
             // keypad_4
             // 
-            this.keypad_4.Location = new System.Drawing.Point(286, 132);
+            this.keypad_4.Location = new System.Drawing.Point(242, 150);
             this.keypad_4.Name = "keypad_4";
             this.keypad_4.Size = new System.Drawing.Size(42, 37);
             this.keypad_4.TabIndex = 7;
@@ -174,7 +178,7 @@
             // 
             // keypad_5
             // 
-            this.keypad_5.Location = new System.Drawing.Point(334, 132);
+            this.keypad_5.Location = new System.Drawing.Point(290, 150);
             this.keypad_5.Name = "keypad_5";
             this.keypad_5.Size = new System.Drawing.Size(42, 37);
             this.keypad_5.TabIndex = 8;
@@ -184,7 +188,7 @@
             // 
             // keypad_1
             // 
-            this.keypad_1.Location = new System.Drawing.Point(286, 89);
+            this.keypad_1.Location = new System.Drawing.Point(242, 107);
             this.keypad_1.Name = "keypad_1";
             this.keypad_1.Size = new System.Drawing.Size(42, 37);
             this.keypad_1.TabIndex = 9;
@@ -194,7 +198,7 @@
             // 
             // keypad_2
             // 
-            this.keypad_2.Location = new System.Drawing.Point(334, 89);
+            this.keypad_2.Location = new System.Drawing.Point(290, 107);
             this.keypad_2.Name = "keypad_2";
             this.keypad_2.Size = new System.Drawing.Size(42, 37);
             this.keypad_2.TabIndex = 10;
@@ -204,7 +208,7 @@
             // 
             // keypad_7
             // 
-            this.keypad_7.Location = new System.Drawing.Point(286, 175);
+            this.keypad_7.Location = new System.Drawing.Point(242, 193);
             this.keypad_7.Name = "keypad_7";
             this.keypad_7.Size = new System.Drawing.Size(42, 37);
             this.keypad_7.TabIndex = 11;
@@ -214,7 +218,7 @@
             // 
             // keypad_8
             // 
-            this.keypad_8.Location = new System.Drawing.Point(334, 175);
+            this.keypad_8.Location = new System.Drawing.Point(290, 193);
             this.keypad_8.Name = "keypad_8";
             this.keypad_8.Size = new System.Drawing.Size(42, 37);
             this.keypad_8.TabIndex = 12;
@@ -224,7 +228,7 @@
             // 
             // keypad_3
             // 
-            this.keypad_3.Location = new System.Drawing.Point(382, 90);
+            this.keypad_3.Location = new System.Drawing.Point(338, 108);
             this.keypad_3.Name = "keypad_3";
             this.keypad_3.Size = new System.Drawing.Size(42, 37);
             this.keypad_3.TabIndex = 13;
@@ -234,7 +238,7 @@
             // 
             // keypad_6
             // 
-            this.keypad_6.Location = new System.Drawing.Point(382, 132);
+            this.keypad_6.Location = new System.Drawing.Point(338, 150);
             this.keypad_6.Name = "keypad_6";
             this.keypad_6.Size = new System.Drawing.Size(42, 37);
             this.keypad_6.TabIndex = 14;
@@ -244,7 +248,7 @@
             // 
             // keypad_9
             // 
-            this.keypad_9.Location = new System.Drawing.Point(382, 175);
+            this.keypad_9.Location = new System.Drawing.Point(338, 193);
             this.keypad_9.Name = "keypad_9";
             this.keypad_9.Size = new System.Drawing.Size(42, 37);
             this.keypad_9.TabIndex = 15;
@@ -254,7 +258,7 @@
             // 
             // keypad_0
             // 
-            this.keypad_0.Location = new System.Drawing.Point(334, 218);
+            this.keypad_0.Location = new System.Drawing.Point(290, 236);
             this.keypad_0.Name = "keypad_0";
             this.keypad_0.Size = new System.Drawing.Size(42, 37);
             this.keypad_0.TabIndex = 16;
@@ -265,7 +269,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(245, 52);
+            this.label5.Location = new System.Drawing.Point(201, 70);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(64, 15);
             this.label5.TabIndex = 17;
@@ -274,7 +278,7 @@
             // textBox_pinentered
             // 
             this.textBox_pinentered.Enabled = false;
-            this.textBox_pinentered.Location = new System.Drawing.Point(315, 49);
+            this.textBox_pinentered.Location = new System.Drawing.Point(271, 67);
             this.textBox_pinentered.MaxLength = 4;
             this.textBox_pinentered.Name = "textBox_pinentered";
             this.textBox_pinentered.Size = new System.Drawing.Size(100, 23);
@@ -283,6 +287,7 @@
             // 
             // button_cardreader
             // 
+            this.button_cardreader.Enabled = false;
             this.button_cardreader.Location = new System.Drawing.Point(19, 175);
             this.button_cardreader.Name = "button_cardreader";
             this.button_cardreader.Size = new System.Drawing.Size(123, 43);
@@ -310,11 +315,53 @@
             this.label6.TabIndex = 21;
             this.label6.Text = "Card Activated on reader";
             // 
+            // cbComPort
+            // 
+            this.cbComPort.FormattingEnabled = true;
+            this.cbComPort.Location = new System.Drawing.Point(431, 12);
+            this.cbComPort.Name = "cbComPort";
+            this.cbComPort.Size = new System.Drawing.Size(121, 23);
+            this.cbComPort.TabIndex = 22;
+            this.cbComPort.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(390, 15);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(35, 15);
+            this.label7.TabIndex = 23;
+            this.label7.Text = "COM";
+            // 
+            // label_connectedTcp
+            // 
+            this.label_connectedTcp.AutoSize = true;
+            this.label_connectedTcp.BackColor = System.Drawing.Color.Red;
+            this.label_connectedTcp.Location = new System.Drawing.Point(418, 67);
+            this.label_connectedTcp.Name = "label_connectedTcp";
+            this.label_connectedTcp.Size = new System.Drawing.Size(134, 15);
+            this.label_connectedTcp.TabIndex = 23;
+            this.label_connectedTcp.Text = "Not connected to server";
+            // 
+            // label_connectedSerial
+            // 
+            this.label_connectedSerial.AutoSize = true;
+            this.label_connectedSerial.BackColor = System.Drawing.Color.Red;
+            this.label_connectedSerial.Location = new System.Drawing.Point(418, 48);
+            this.label_connectedSerial.Name = "label_connectedSerial";
+            this.label_connectedSerial.Size = new System.Drawing.Size(128, 15);
+            this.label_connectedSerial.TabIndex = 23;
+            this.label_connectedSerial.Text = "Not connected to door";
+            // 
             // CardReaderForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(564, 349);
+            this.Controls.Add(this.label_connectedSerial);
+            this.Controls.Add(this.label_connectedTcp);
+            this.Controls.Add(this.label7);
+            this.Controls.Add(this.cbComPort);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.checkBox_cardonreader);
             this.Controls.Add(this.button_cardreader);
@@ -374,5 +421,9 @@
         private Button button_cardreader;
         private CheckBox checkBox_cardonreader;
         private Label label6;
+        private ComboBox cbComPort;
+        private Label label7;
+        private Label label_connectedTcp;
+        private Label label_connectedSerial;
     }
 }

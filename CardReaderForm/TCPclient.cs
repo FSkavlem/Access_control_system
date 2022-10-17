@@ -11,6 +11,7 @@ using System.Dynamic;
 namespace CardReaderForm
 {
     public delegate void PinAnswerFromDB(object sender, PinAnswerFromDBEventArgs e);
+    public delegate void ServerConnectStatus(object sender, bool x);
     public class PinAnswerFromDBEventArgs : EventArgs
     {
         public PinAnswerFromDBEventArgs(ReturnCardComms returnCardComms)
@@ -24,14 +25,16 @@ namespace CardReaderForm
   
     class TCPclient
     {
-
+        //Must closed TCP client
         Socket comSocket;
         CardReaderForm mainform;
         public event PinAnswerFromDB _PinAnswerFromDB;
+        public event EventHandler ServerConnectStatus;
 
         public void RunCLient(CardReaderForm f)
         {
             mainform = f;
+
             ThreadStart ts = new ThreadStart(StartTCPClient);
             Thread TCPThread = new Thread(ts);
             TCPThread.Name = "TCPclientThread";
@@ -50,22 +53,14 @@ namespace CardReaderForm
             AlarmEvent alarmEvent = e.alarmevent;
             sendClassAsJSON_String(PackageIdentifier.AlarmEvent, alarmEvent, ref comSocket);
         }
-
-
-        void StartTCPClient()
+        private void StartTCPClient()
         {
-            Door door;
             bool error = false;
-            
-            bool newAccessTry = false;
-            Tuple<bool,int> alarm;
-    
             CardInfo lastuser = new CardInfo();
-
             //subscribe to events
             mainform.NewAccesRequest += Mainform_NewAccesRequest;
             mainform.PublishAlarm += Mainform_PublishAlarm;
-
+            AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
 
             while (true)
             {
@@ -73,13 +68,15 @@ namespace CardReaderForm
                 
                 while (comSocket.Connected)
                 {
-                    string receivedString = ClassLibrary.Message.ReceiveString(comSocket, out error);
-                    string packageID = ClassLibrary.Message.GetPackageIdentifier(ref receivedString, out receivedString);
+                    ServerConnectStatus?.Invoke(true, new EventArgs());
+                    string receivedString = Messages.ReceiveString(comSocket, out error);
+                    string packageID =Messages.GetPackageIdentifier(ref receivedString, out receivedString);
                     switch (packageID)
                     {
                         case PackageIdentifier.ServerACK:
                             Debug.WriteLine("{0} received from: {1}", receivedString, comSocket.RemoteEndPoint);
                             break;
+                        
                         case PackageIdentifier.PinValidation:
                             ReturnCardComms x = JsonSerializer.Deserialize<ReturnCardComms>(receivedString);
                                         
@@ -93,18 +90,25 @@ namespace CardReaderForm
                         default:
                             break;
                     }
-            Thread.Sleep(20);
+                    Thread.Sleep(20);
                 }
+             ServerConnectStatus?.Invoke(false, new EventArgs());
              Thread.Sleep(1000); //Wait 1000MS before trying to reconnect
             }
+        }
+
+        private void OnProcessExit(object? sender, EventArgs e)
+        {
+            sendClassAsJSON_String(PackageIdentifier.ClosingDown,"", ref comSocket);
+            Thread.Sleep(100);
         }
 
         private void sendClassAsJSON_String(string packageID, object class2send, ref Socket socket)
         {
             bool error;
             string jsonString = JsonSerializer.Serialize(class2send);
-            jsonString = ClassLibrary.Message.AddPackageIdentifier(packageID, jsonString);
-            var complete = ClassLibrary.Message.SendString(socket, jsonString, out error);
+            jsonString = Messages.AddPackageIdentifier(packageID, jsonString);
+            var complete = Messages.SendString(socket, jsonString, out error);
         }
         private static Socket Connect2Server()
         {
