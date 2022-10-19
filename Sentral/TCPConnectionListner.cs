@@ -11,7 +11,6 @@ namespace Sentral
 {
     public class TCPConnectionListner
     {
-        
         public static MainActivity mainform { get; set; }
         public TCPConnectionListner(MainActivity main)
         {

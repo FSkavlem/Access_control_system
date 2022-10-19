@@ -11,8 +11,6 @@ namespace Sentral
 {
     public delegate void UpdateFormAccesList(AccessEntryTry x);
     public delegate void UpdateFormAlarmList(AlarmLogSQLEntry x);
-    //public delegate void KillThread(Thread x);
-    //public delegate void SQLqueryFinished(AccessEntryTry x); //adds handle to namespace
     public partial class MainActivity : Form
     {
         public int AccessIDnumber;
