@@ -1,6 +1,8 @@
 ﻿using ClassLibrary;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Dynamic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
@@ -11,7 +13,7 @@ using System.Threading.Tasks;
 namespace Sentral
 {
     public delegate void NewAccessEntryTry(AccessEntryTry x);
-    public delegate void AlarmRaised(AlarmEvent x);
+    public delegate void AlarmRaised(AlarmLogEntry x);
     public class TCPConnectionHandler
     {
         public static MainActivity Mainform;
@@ -49,20 +51,23 @@ namespace Sentral
                 {
                     string receivedString = Messages.ReceiveString(ComSocket, out error);
                     string packageID = Messages.GetPackageIdentifier(ref receivedString, out receivedString);
-
+                    User user = new User();
                     switch (packageID)
                     {
                         case PackageIdentifier.AlarmEvent:
                             AlarmEvent alarmEvent = JsonSerializer.Deserialize<AlarmEvent>(receivedString);
-                            AlarmRaised?.Invoke(alarmEvent); //fire alarm event
+                            Task<User> task = SQLUser_Query.GetUser(alarmEvent.LastUser);
+                            user = await task; //venter på sql spørring
+                            AlarmLogEntry alarmLogEntry = new AlarmLogEntry { DoorNumber = alarmEvent.DoorNumber, AlarmType = alarmEvent.Alarm_type.toString(), LastUser = user, TimeStamp = alarmEvent.Time };
+                            AlarmRaised?.Invoke(alarmLogEntry); //fire alarm event
                             break;
                         case PackageIdentifier.ClosingDown:
                             //KillMySelf(ComSocket);
                             break;
                         case PackageIdentifier.PinValidation:
                             CardInfo cardInfo = JsonSerializer.Deserialize<CardInfo>(receivedString);
-                            Task<User> task = SQLUser_Query.GetUser(cardInfo);
-                            User user = await task; //venter på sql spørring
+                            Task<User> task2 = SQLUser_Query.GetUser(cardInfo);
+                            user = await task2; //venter på sql spørring
 
                             bool validation = CheckUserPin(cardInfo,user);
                             AccessEntryTry tryArgs = new AccessEntryTry(user, cardInfo.Time, validation, cardInfo.DoorNr);
@@ -77,6 +82,7 @@ namespace Sentral
                             break;
                     }
                 }
+                
             }
             //KillMySelf(ComSocket);
         }

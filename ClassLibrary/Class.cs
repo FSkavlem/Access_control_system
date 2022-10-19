@@ -15,7 +15,7 @@ namespace ClassLibrary
             int cardID = a.CardID;
             User Bruker = new User();
 
-            var cs = "Host=20.56.240.122;Username=h577783;Password=g7Np2wVa;Database=h577783";
+            var cs = "";
             using var con = new NpgsqlConnection(cs);
 
             await using var conn = new NpgsqlConnection(cs);
@@ -204,7 +204,7 @@ namespace ClassLibrary
         public CardInfo LastUser { get; set; }
         public int DoorNumber { get; set; }
     }
-    public class AlarmLogSQLEntry
+    public class AlarmLogEntry
     {
         public User LastUser { get; set; }
         public string AlarmType { get; set; }

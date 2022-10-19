@@ -10,13 +10,13 @@ using System.Dynamic;
 namespace Sentral
 {
     public delegate void UpdateFormAccesList(AccessEntryTry x);
-    public delegate void UpdateFormAlarmList(AlarmLogSQLEntry x);
+    public delegate void UpdateFormAlarmList(AlarmLogEntry x);
     public partial class MainActivity : Form
     {
         public int AccessIDnumber;
         public int AlarmIDnumber;
         public static MainActivity mainform;
-
+      
         //must add 
         //UpdateAccessLogs(AccessEntryTry x) method must insert into accesstry into SQL DB
         //UpdateAlarmLogs method must insert into alarm SQL DB
@@ -34,11 +34,11 @@ namespace Sentral
             TCPConnectionHandler.AlarmRaised += TCPConnectionHandler_AlarmRaised;
         }
 
-        private void TCPConnectionHandler_AlarmRaised(AlarmEvent x) => mainform.Invoke(new UpdateFormAlarmList(mainform.UpdateAlarmLogs), x);
+        private void TCPConnectionHandler_AlarmRaised(AlarmLogEntry x) => mainform.Invoke(new UpdateFormAlarmList(mainform.UpdateAlarmLogs), x);
 
         private void TCPConnectionHandler_newAccessEntryTry(AccessEntryTry x) => mainform.Invoke(new UpdateFormAccesList(mainform.UpdateAccessLogs), x);
 
-        private void UpdateAlarmLogs(AlarmLogSQLEntry x)
+        private void UpdateAlarmLogs(AlarmLogEntry x)
         {
             //INSERT INTO SQL DB
             AlarmIDnumber++;
@@ -68,7 +68,7 @@ namespace Sentral
             listview_access_log.Items.Add(listViewItem);
         }
 
-        private static void SQLlogAlarm(AlarmLogSQLEntry x)
+        private static void SQLlogAlarm(AlarmLogEntry x)
         {
             //something something log alarm SQL, ID set bt SQL DB
 
