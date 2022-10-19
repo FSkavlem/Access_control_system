@@ -7,21 +7,11 @@ using System.Text;
 using System.Diagnostics;
 using System.Dynamic;
 
-
 namespace CardReaderForm
 {
     public delegate void PinAnswerFromDB(object sender, PinAnswerFromDBEventArgs e);
     public delegate void ServerConnectStatus(object sender, bool x);
-    public class PinAnswerFromDBEventArgs : EventArgs
-    {
-        public PinAnswerFromDBEventArgs(ReturnCardComms returnCardComms)
-        {
-            this.returnCardComms = returnCardComms;
-        }
 
-        public ReturnCardComms returnCardComms { get; set; }
-        
-    }
   
     class TCPclient
     {
@@ -30,11 +20,12 @@ namespace CardReaderForm
         CardReaderForm mainform;
         public event PinAnswerFromDB _PinAnswerFromDB;
         public event EventHandler ServerConnectStatus;
+        public int doornr;
 
         public void RunCLient(CardReaderForm f)
         {
             mainform = f;
-
+            doornr = 1;
             ThreadStart ts = new ThreadStart(StartTCPClient);
             Thread TCPThread = new Thread(ts);
             TCPThread.Name = "TCPclientThread";
@@ -46,6 +37,7 @@ namespace CardReaderForm
         private void Mainform_NewAccesRequest(object? sender, NewAccessRequestEventArgs e)
         {
             CardInfo cardInfo = e.carddata;
+            cardInfo.DoorNr = doornr;
             sendClassAsJSON_String(PackageIdentifier.PinValidation, cardInfo, ref comSocket);
         }
         private void Mainform_PublishAlarm(PublishAlarmEventArgs e)

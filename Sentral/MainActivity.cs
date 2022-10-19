@@ -9,69 +9,40 @@ using System.Dynamic;
 
 namespace Sentral
 {
-    public delegate void UpdateFormAccesList(AccessLogEntrySQL x);
+    public delegate void UpdateFormAccesList(AccessEntryTry x);
     public delegate void UpdateFormAlarmList(AlarmLogSQLEntry x);
-    public delegate void KillThread(Thread x);
+    //public delegate void KillThread(Thread x);
+    //public delegate void SQLqueryFinished(AccessEntryTry x); //adds handle to namespace
     public partial class MainActivity : Form
     {
         public int AccessIDnumber;
         public int AlarmIDnumber;
         public static MainActivity mainform;
 
+        //must add 
+        //UpdateAccessLogs(AccessEntryTry x) method must insert into accesstry into SQL DB
+        //UpdateAlarmLogs method must insert into alarm SQL DB
+
         public MainActivity()
         {
             InitializeComponent();
-            StartUIupdater();
             AccessIDnumber = 0;
             AlarmIDnumber = 0;
             mainform = this;
-            ThreadPool.QueueUserWorkItem(StartServer);
+            TCPConnectionListner connectionListner = new TCPConnectionListner(this);
+
+            //event subscribers
+            TCPConnectionHandler.newAccessEntryTry += TCPConnectionHandler_newAccessEntryTry;
+            TCPConnectionHandler.AlarmRaised += TCPConnectionHandler_AlarmRaised;
         }
 
-        private static void StartServer(object? o)
-        {
-            // Server setup config
-            Socket ListenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint serverEP = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 9050);
-            ListenSocket.Bind(serverEP);
-            ListenSocket.Listen(10);
+        private void TCPConnectionHandler_AlarmRaised(AlarmEvent x) => mainform.Invoke(new UpdateFormAlarmList(mainform.UpdateAlarmLogs), x);
 
-            while (true)
-            {
-                Socket ComSocket = ListenSocket.Accept(); // blokkerende metode
-                // Write established comms to Output Window
-                Debug.WriteLine("Comm Established: {0}:{1}", ComSocket.RemoteEndPoint, ComSocket.LocalEndPoint);
-                // passes socket to other thread
-                if (ComSocket.IsBound)
-                {
-                    Thread TCPThread = new Thread(TCPclient);
-                    TCPThread.Name = "TCPclientThread";
-                    TCPThread.IsBackground = true;
-                    TCPThread.Start(ComSocket);
-                    //ThreadPool.QueueUserWorkItem(TCPclient, ComSocket);
-                }
-                //must close TCP CLIENT
-                //ThreadPool.QueueUserWorkItem(SQLclient, this);
-            }
-        }
-        private void KillThread(Thread x)
+        private void TCPConnectionHandler_newAccessEntryTry(AccessEntryTry x) => mainform.Invoke(new UpdateFormAccesList(mainform.UpdateAccessLogs), x);
+
+        private void UpdateAlarmLogs(AlarmLogSQLEntry x)
         {
-            x.Join(); //er hERR!! prøver å drepe thread fra client
-        } 
-        private void StartUIupdater()
-        {
-            System.Windows.Forms.Timer UIupdateTimer;
-            UIupdateTimer = new System.Windows.Forms.Timer();
-            UIupdateTimer.Interval = 100;
-            UIupdateTimer.Tick += new EventHandler(Timer_Elapsed);
-            UIupdateTimer.Enabled = true;
-        }
-        private void Timer_Elapsed(object? sender, EventArgs e)
-        {
-            
-        }
-        private void UpdateAlarmListView(AlarmLogSQLEntry x)
-        {
+            //INSERT INTO SQL DB
             AlarmIDnumber++;
             string lastuser = string.Format("{0},{1}", x.LastUser.Etternavn, x.LastUser.Fornavn);
             string[] row = {AlarmIDnumber.ToString(),
@@ -81,14 +52,15 @@ namespace Sentral
             ListViewItem listViewItem = new ListViewItem(row);
             listview_alarm_log.Items.Add(listViewItem);
         }
-        private void UpdateAccessListView(AccessLogEntrySQL x)
-        {   //should be from DB 
+        private void UpdateAccessLogs(AccessEntryTry x)
+        {   
+            //AND INSERT INTO DB
             string a = string.Empty;
             AccessIDnumber++;
             if (x.AccessGranted) a = "Granted";
             else a = "Denied";
             string[] row = {AccessIDnumber.ToString(),
-                            x.User.CardID.ToString(), 
+                            x.User.CardID.ToString(),
                             x.User.Etternavn,
                             x.User.Fornavn,
                             x.DoorNr.ToString(),
@@ -97,109 +69,16 @@ namespace Sentral
             ListViewItem listViewItem = new ListViewItem(row);
             listview_access_log.Items.Add(listViewItem);
         }
-        private static void SQLclient(object arg)
-        {
 
-        }
-
-        //TCP_CLIENT
-        private static void TCPclient(object arg)
-        {
-            Socket ComSocket = (Socket)arg;
-            bool error = false;
-            bool complete = false;
-            Messages.SendString(ComSocket, PackageIdentifier.ServerACK, out error);
-
-            while (ComSocket.Connected)
-            {
-                if(ComSocket.Available > 0) // receive data from connected socket if available
-                {
-                    string receivedString = Messages.ReceiveString(ComSocket, out error);
-                    string packageID = Messages.GetPackageIdentifier(ref receivedString, out receivedString);
-
-                    switch (packageID)
-                    {
-                        case PackageIdentifier.AlarmEvent:
-                            AlarmEvent alarmEvent = JsonSerializer.Deserialize<AlarmEvent>(receivedString);
-                            AlarmLogger(alarmEvent);
-                            break;
-                        case PackageIdentifier.ClosingDown:
-                            KillMySelf(ComSocket);
-                            break;
-                        case PackageIdentifier.PinValidation:
-
-                            CardInfo cardInfo = JsonSerializer.Deserialize<CardInfo>(receivedString);
-                            User user = SQLrequestUser(cardInfo.CardID);
-                            bool validation = CheckUserPin(cardInfo,user);
-                            
-                            AccessLogEntrySQL accesslogEntry = new AccessLogEntrySQL(user, cardInfo.Time, validation,cardInfo.DoorNr);
-                            AccessLogger(accesslogEntry);
-
-                            ReturnCardComms queryReturn = new ReturnCardComms {Validation=validation};
-
-                            string jsonString = JsonSerializer.Serialize(queryReturn);
-                            jsonString = Messages.AddPackageIdentifier(PackageIdentifier.PinValidation, jsonString);
-                            complete = Messages.SendString(ComSocket, jsonString, out error);
-                            break;
-                    }
-                }
-            }
-            KillMySelf(ComSocket);
-        }
-
-        private static void KillMySelf(Socket ComSocket)
-        {
-            // Lukker kommunikasjonssokkel og viser info
-            Debug.WriteLine("Comm Diconnected: {0}:{1}", ComSocket.RemoteEndPoint, ComSocket.LocalEndPoint);
-            ComSocket.Close();
-            ComSocket.Dispose();
-            Thread.Sleep(100);
-            mainform.Invoke(new KillThread(mainform.KillThread), Thread.CurrentThread); //kill my self
-        }
-
-        private static void AlarmLogger(AlarmEvent alarmEvent)
-        {
-            string alarmtype = AlarmTypes.toString(alarmEvent.Alarm_type);
-            User user = SQLrequestUser(alarmEvent.LastUser.CardID);
-            AlarmLogSQLEntry alarmEntry = new AlarmLogSQLEntry { AlarmType = alarmtype, DoorNumber = alarmEvent.DoorNumber, LastUser = user, TimeStamp = alarmEvent.Time };
-            UpdateFormAlarmList x = new UpdateFormAlarmList(mainform.UpdateAlarmListView);
-
-            mainform.Invoke(x, alarmEntry);
-            SQLlogAlarm(alarmEntry);
-        }
-        private static void AccessLogger(AccessLogEntrySQL accesslogEntry)
-        {
-            UpdateFormAccesList x = new UpdateFormAccesList(mainform.UpdateAccessListView);
-            mainform.Invoke(x, accesslogEntry);
-        }
-        private static bool CheckUserPin(CardInfo data, User user)
-        {
-            bool access;
-            if (user.Pin == data.PinEntered)
-            {
-                access = true;
-            }
-            else
-            {
-                access = false;
-            }
-            return access;
-        }
         private static void SQLlogAlarm(AlarmLogSQLEntry x)
         {
             //something something log alarm SQL, ID set bt SQL DB
 
         }
-        private static void SQLlogAccessEntry(AccessLogEntrySQL x)
+        private static void SQLlogAccessEntry(AccessEntryTry x)
         {
             //something something log access try from data to SQL, ID set bt SQL DB
         }
-        private static User SQLrequestUser(int cardID)
-        {
-            //Get user from SQL DB in accordance with cardID
-            DateTime fuuuu = new DateTime(2025, 12, 25, 10, 30, 50);
-            User SQLbruker = new User("fredrik", "skavlem",1234,fuuuu, "1111");
-            return SQLbruker;
-        }
     }
+
 }

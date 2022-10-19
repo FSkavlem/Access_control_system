@@ -4,9 +4,39 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Npgsql;
 
 namespace ClassLibrary
 {
+    public class SQLUser_Query
+    {
+        public static async Task<User> GetUser(CardInfo a)
+        {
+            int cardID = a.CardID;
+            User Bruker = new User();
+
+            var cs = "Host=20.56.240.122;Username=h577783;Password=g7Np2wVa;Database=h577783";
+            using var con = new NpgsqlConnection(cs);
+
+            await using var conn = new NpgsqlConnection(cs);
+            await con.OpenAsync();
+
+            using var cmd = new NpgsqlCommand();
+            cmd.Connection = con;
+            cmd.CommandText = $"select * from usertable where personid = {cardID};";
+
+            await using NpgsqlDataReader rdr = cmd.ExecuteReader();
+            {
+                while (await rdr.ReadAsync())
+                {
+                    Bruker = new User(rdr.GetString(1), rdr.GetString(2), rdr.GetInt32(0), rdr.GetDateTime(3), Convert.ToString(rdr.GetInt32(4)));
+                }
+            }
+            con.Close();
+            return Bruker;
+        }
+
+    }
     public class Messages
     {
         public static string AddPackageIdentifier(string identifier, string aString) => identifier + aString;
@@ -87,7 +117,13 @@ namespace ClassLibrary
         public string Pin { get; set; }     //string? means it can be null
         public int CardID { get; set; }
         public DateTime? EndDato { get; set; }
-
+        public User()
+        {
+            Fornavn = "";
+            Etternavn = "";
+            Pin = "";
+            CardID = 0;
+        }
         public User(string fornavn, string etternavn, int kortID, DateTime endDato, string pin)
         {
             Fornavn = fornavn;
@@ -189,13 +225,13 @@ namespace ClassLibrary
 
     }
 
-    public class AccessLogEntrySQL
+    public class AccessEntryTry
     {
         public int DoorNr { get; set; }
-        public User? User { get; set; }
+        public User User { get; set; }
         public DateTime? TimeStamp { get; set; }
         public bool AccessGranted { get; set; }
-        public AccessLogEntrySQL(User? user, DateTime? timeStamp, bool accessGranted, int doorNr)
+        public AccessEntryTry(User? user, DateTime? timeStamp, bool accessGranted, int doorNr)
         {
             User = user;
             TimeStamp = timeStamp;
@@ -223,5 +259,55 @@ namespace ClassLibrary
         public bool Validation { get; set; }
 
     }
- 
+    public class NewAccessRequestEventArgs : EventArgs
+    {
+        public NewAccessRequestEventArgs(CardInfo carddata)
+        {
+            this.carddata = carddata;
+        }
+
+        public CardInfo carddata { get; set; }
+
+    }
+    public class PublishAlarmEventArgs : EventArgs
+    {
+        public PublishAlarmEventArgs(AlarmEvent x)
+        {
+            this.alarmevent = x;
+        }
+
+        public AlarmEvent alarmevent { get; set; }
+
+    }
+    public class DoorAlarmEventArgs : EventArgs
+    {
+        public DoorAlarmEventArgs(int alarmtypes)
+        {
+            this.alarmtypes = alarmtypes;
+        }
+
+        public int alarmtypes { get; set; }
+
+    }
+    public class AccessEntryTryArgs : EventArgs
+    {
+        public AccessEntryTryArgs(User x)
+        {
+            this.data = x;
+        }
+
+        public User data { get; set; }
+
+    }
+    public class PinAnswerFromDBEventArgs : EventArgs
+    {
+        public PinAnswerFromDBEventArgs(ReturnCardComms returnCardComms)
+        {
+            this.returnCardComms = returnCardComms;
+        }
+
+        public ReturnCardComms returnCardComms { get; set; }
+
+    }
+
 }

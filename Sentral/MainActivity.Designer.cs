@@ -39,12 +39,6 @@
             this.button1 = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
             this.Access_Panel = new System.Windows.Forms.Panel();
-            this.radioButton6 = new System.Windows.Forms.RadioButton();
-            this.radioButton5 = new System.Windows.Forms.RadioButton();
-            this.radioButton4 = new System.Windows.Forms.RadioButton();
-            this.radioButton3 = new System.Windows.Forms.RadioButton();
-            this.radioButton2 = new System.Windows.Forms.RadioButton();
-            this.radioButton1 = new System.Windows.Forms.RadioButton();
             this.Alarm_window = new System.Windows.Forms.Panel();
             this.listview_alarm_log = new System.Windows.Forms.ListView();
             this.id = new System.Windows.Forms.ColumnHeader();
@@ -61,7 +55,6 @@
             this.access_time = new System.Windows.Forms.ColumnHeader();
             this.access_granted = new System.Windows.Forms.ColumnHeader();
             this.ButtonPanel.SuspendLayout();
-            this.Access_Panel.SuspendLayout();
             this.Alarm_window.SuspendLayout();
             this.Access_window.SuspendLayout();
             this.SuspendLayout();
@@ -175,83 +168,11 @@
             // 
             // Access_Panel
             // 
-            this.Access_Panel.Controls.Add(this.radioButton6);
-            this.Access_Panel.Controls.Add(this.radioButton5);
-            this.Access_Panel.Controls.Add(this.radioButton4);
-            this.Access_Panel.Controls.Add(this.radioButton3);
-            this.Access_Panel.Controls.Add(this.radioButton2);
-            this.Access_Panel.Controls.Add(this.radioButton1);
             this.Access_Panel.Dock = System.Windows.Forms.DockStyle.Right;
-            this.Access_Panel.Location = new System.Drawing.Point(937, 0);
+            this.Access_Panel.Location = new System.Drawing.Point(1049, 0);
             this.Access_Panel.Name = "Access_Panel";
-            this.Access_Panel.Size = new System.Drawing.Size(234, 686);
+            this.Access_Panel.Size = new System.Drawing.Size(122, 686);
             this.Access_Panel.TabIndex = 1;
-            // 
-            // radioButton6
-            // 
-            this.radioButton6.AutoSize = true;
-            this.radioButton6.Location = new System.Drawing.Point(117, 276);
-            this.radioButton6.Name = "radioButton6";
-            this.radioButton6.Size = new System.Drawing.Size(31, 19);
-            this.radioButton6.TabIndex = 6;
-            this.radioButton6.TabStop = true;
-            this.radioButton6.Text = "6";
-            this.radioButton6.UseVisualStyleBackColor = true;
-            // 
-            // radioButton5
-            // 
-            this.radioButton5.AutoSize = true;
-            this.radioButton5.Location = new System.Drawing.Point(117, 251);
-            this.radioButton5.Name = "radioButton5";
-            this.radioButton5.Size = new System.Drawing.Size(31, 19);
-            this.radioButton5.TabIndex = 5;
-            this.radioButton5.TabStop = true;
-            this.radioButton5.Text = "5";
-            this.radioButton5.UseVisualStyleBackColor = true;
-            // 
-            // radioButton4
-            // 
-            this.radioButton4.AutoSize = true;
-            this.radioButton4.Location = new System.Drawing.Point(117, 226);
-            this.radioButton4.Name = "radioButton4";
-            this.radioButton4.Size = new System.Drawing.Size(31, 19);
-            this.radioButton4.TabIndex = 4;
-            this.radioButton4.TabStop = true;
-            this.radioButton4.Text = "4";
-            this.radioButton4.UseVisualStyleBackColor = true;
-            // 
-            // radioButton3
-            // 
-            this.radioButton3.AutoSize = true;
-            this.radioButton3.Location = new System.Drawing.Point(80, 276);
-            this.radioButton3.Name = "radioButton3";
-            this.radioButton3.Size = new System.Drawing.Size(31, 19);
-            this.radioButton3.TabIndex = 3;
-            this.radioButton3.TabStop = true;
-            this.radioButton3.Text = "3";
-            this.radioButton3.UseVisualStyleBackColor = true;
-            // 
-            // radioButton2
-            // 
-            this.radioButton2.AutoSize = true;
-            this.radioButton2.Location = new System.Drawing.Point(80, 251);
-            this.radioButton2.Name = "radioButton2";
-            this.radioButton2.Size = new System.Drawing.Size(31, 19);
-            this.radioButton2.TabIndex = 2;
-            this.radioButton2.TabStop = true;
-            this.radioButton2.Text = "2";
-            this.radioButton2.UseVisualStyleBackColor = true;
-            // 
-            // radioButton1
-            // 
-            this.radioButton1.AutoSize = true;
-            this.radioButton1.Location = new System.Drawing.Point(80, 226);
-            this.radioButton1.Name = "radioButton1";
-            this.radioButton1.Size = new System.Drawing.Size(31, 19);
-            this.radioButton1.TabIndex = 1;
-            this.radioButton1.TabStop = true;
-            this.radioButton1.Text = "1";
-            this.radioButton1.UseVisualStyleBackColor = true;
             // 
             // Alarm_window
             // 
@@ -260,7 +181,7 @@
             this.Alarm_window.Location = new System.Drawing.Point(200, 458);
             this.Alarm_window.Name = "Alarm_window";
             this.Alarm_window.Padding = new System.Windows.Forms.Padding(10, 0, 10, 10);
-            this.Alarm_window.Size = new System.Drawing.Size(737, 228);
+            this.Alarm_window.Size = new System.Drawing.Size(849, 228);
             this.Alarm_window.TabIndex = 2;
             // 
             // listview_alarm_log
@@ -275,7 +196,7 @@
             this.listview_alarm_log.GridLines = true;
             this.listview_alarm_log.Location = new System.Drawing.Point(10, 0);
             this.listview_alarm_log.Name = "listview_alarm_log";
-            this.listview_alarm_log.Size = new System.Drawing.Size(717, 218);
+            this.listview_alarm_log.Size = new System.Drawing.Size(829, 218);
             this.listview_alarm_log.TabIndex = 0;
             this.listview_alarm_log.UseCompatibleStateImageBehavior = false;
             this.listview_alarm_log.View = System.Windows.Forms.View.Details;
@@ -307,7 +228,7 @@
             this.Access_window.Location = new System.Drawing.Point(200, 0);
             this.Access_window.Name = "Access_window";
             this.Access_window.Padding = new System.Windows.Forms.Padding(10);
-            this.Access_window.Size = new System.Drawing.Size(737, 458);
+            this.Access_window.Size = new System.Drawing.Size(849, 458);
             this.Access_window.TabIndex = 3;
             // 
             // listview_access_log
@@ -326,7 +247,7 @@
             this.listview_access_log.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.listview_access_log.Location = new System.Drawing.Point(10, 10);
             this.listview_access_log.Name = "listview_access_log";
-            this.listview_access_log.Size = new System.Drawing.Size(717, 438);
+            this.listview_access_log.Size = new System.Drawing.Size(829, 438);
             this.listview_access_log.TabIndex = 0;
             this.listview_access_log.UseCompatibleStateImageBehavior = false;
             this.listview_access_log.View = System.Windows.Forms.View.Details;
@@ -377,8 +298,6 @@
             this.Name = "MainActivity";
             this.Text = "Form1";
             this.ButtonPanel.ResumeLayout(false);
-            this.Access_Panel.ResumeLayout(false);
-            this.Access_Panel.PerformLayout();
             this.Alarm_window.ResumeLayout(false);
             this.Access_window.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -411,12 +330,6 @@
         private ColumnHeader AlarmType;
         private ColumnHeader last_user;
         private ColumnHeader time;
-        private RadioButton radioButton6;
-        private RadioButton radioButton5;
-        private RadioButton radioButton4;
-        private RadioButton radioButton3;
-        private RadioButton radioButton2;
-        private RadioButton radioButton1;
         private ColumnHeader bruker_etternavn;
         private ColumnHeader Door;
     }

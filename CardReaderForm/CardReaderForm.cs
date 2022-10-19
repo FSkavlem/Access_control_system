@@ -78,16 +78,11 @@ namespace CardReaderForm
             serialClient.NewAlarmEvent += SerialClient_DoorAlarm;
             serialClient.DoorConnectStatus += SerialClient_DoorConnectStatus;
 
-
-
             Thread.CurrentThread.Name = "CardReaderForm";
 
             tcpClient.RunCLient(this);
             
         }
-
-
-
         private void SetStartStateOfPublicVariables()
         {
             keypadstring = "";
@@ -117,7 +112,6 @@ namespace CardReaderForm
         private void SerialClient_DoorAlarm(object sender, DoorAlarmEventArgs e)
         {
             //serial_thread
-            var a = 1;
             instance.Invoke(new SetAlarm(instance.PublishAlarmEvent), e.alarmtypes);
         }
         private void FourdigitsEntered(object? sender, EventArgs e)
@@ -251,7 +245,7 @@ namespace CardReaderForm
         private void button_cardreader_Click(object sender, EventArgs e)
         {
             accessentry = true;
-            ToogleSwipeCardAndPin(false);
+            //ToogleSwipeCardAndPin(false);
         }
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -261,25 +255,6 @@ namespace CardReaderForm
         }
 
     }
-    public class NewAccessRequestEventArgs : EventArgs
-    {
-        public NewAccessRequestEventArgs(CardInfo carddata)
-        {
-            this.carddata = carddata;
-        }
 
-        public CardInfo carddata { get; set; }
-
-    }
-    public class PublishAlarmEventArgs : EventArgs
-    {
-        public PublishAlarmEventArgs(AlarmEvent x)
-        {
-            this.alarmevent = x;
-        }
-
-        public AlarmEvent alarmevent { get; set; }
-
-    }
 }
   

@@ -280,15 +280,6 @@ namespace CardReaderForm
 
         }
     }
-    public class DoorAlarmEventArgs : EventArgs
-    {
-        public DoorAlarmEventArgs(int alarmtypes)
-        {
-            this.alarmtypes = alarmtypes;
-        }
 
-        public int alarmtypes { get; set; }
-
-    }
 }
 

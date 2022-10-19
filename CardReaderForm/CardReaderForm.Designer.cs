@@ -287,7 +287,6 @@
             // 
             // button_cardreader
             // 
-            this.button_cardreader.Enabled = false;
             this.button_cardreader.Location = new System.Drawing.Point(19, 175);
             this.button_cardreader.Name = "button_cardreader";
             this.button_cardreader.Size = new System.Drawing.Size(123, 43);
