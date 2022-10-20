@@ -6,6 +6,7 @@ using ClassLibrary;
 using System.Text.Json;
 using System.Runtime.CompilerServices;
 using System.Dynamic;
+using Npgsql;
 
 namespace Sentral
 {
@@ -76,6 +77,23 @@ namespace Sentral
         private static void SQLlogAccessEntry(AccessEntryTry x)
         {
             //something something log access try from data to SQL, ID set bt SQL DB
+            var connString = "Host=server;Username=user;Password=mypass;Database=dbName";
+
+            using var con = new NpgsqlConnection(connString);
+            con.Open();
+
+            // Insert some data
+            using (var cmd = new NpgsqlCommand("INSERT INTO logAccess (user_id, door_nr, access_granted, date_time) " +
+                "VALUES (@UserId,@DoorNr,@AccessGranted, @DateTime)", con))
+            {
+                cmd.Parameters.AddWithValue("UserId", x.User.CardID);
+                cmd.Parameters.AddWithValue("DoorNr", x.DoorNr);
+                cmd.Parameters.AddWithValue("AccessGranted", x.AccessGranted);
+                cmd.Parameters.AddWithValue("DateTime", x.TimeStamp);
+                cmd.ExecuteNonQuery();
+            }
+
+            con.Close();
         }
     }
 
