@@ -245,7 +245,7 @@ namespace CardReaderForm
         private void button_cardreader_Click(object sender, EventArgs e)
         {
             accessentry = true;
-            //ToogleSwipeCardAndPin(false);
+            ToogleSwipeCardAndPin(false);
         }
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {

@@ -32,18 +32,12 @@ namespace Sentral
             TCPThread.IsBackground = true;
             TCPThread.Start();
         } 
-        public void StartServer()
-        {
-            
-        }
         public static async void ConnectionHandler()
         {
             Socket ComSocket = comsocket;
             bool error = false;
             bool complete = false;
             Messages.SendString(ComSocket, PackageIdentifier.ServerACK, out error);
-
-            //mainform.SQLfinished += Mainform_SQLfinished;
 
             while (ComSocket.Connected)
             {
