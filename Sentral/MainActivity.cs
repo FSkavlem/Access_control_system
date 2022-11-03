@@ -7,94 +7,144 @@ using System.Text.Json;
 using System.Runtime.CompilerServices;
 using System.Dynamic;
 using Npgsql;
+using System;
 
 namespace Sentral
 {
+    //delegates to get handle for mainform
+    public delegate void UpdateView(List<object> data, ListView x);
     public delegate void UpdateFormAccesList(AccessEntryTry x);
     public delegate void UpdateFormAlarmList(AlarmLogEntry x);
     public partial class MainActivity : Form
     {
-        public int AccessIDnumber;
-        public int AlarmIDnumber;
         public static MainActivity mainform;
-      
-        //must add 
-        //UpdateAccessLogs(AccessEntryTry x) method must insert into accesstry into SQL DB
-        //UpdateAlarmLogs method must insert into alarm SQL DB
+        public static generate_accesslogs genlogsform;
 
         public MainActivity()
         {
             InitializeComponent();
-            AccessIDnumber = 0;
-            AlarmIDnumber = 0;
-            mainform = this;
+            if (mainform == null)   //singleton
+            {   
+                mainform = this;
+            }
+            //TCP listner
             TCPConnectionListner connectionListner = new TCPConnectionListner(this);
 
             //event subscribers
             TCPConnectionHandler.newAccessEntryTry += TCPConnectionHandler_newAccessEntryTry;
             TCPConnectionHandler.AlarmRaised += TCPConnectionHandler_AlarmRaised;
+
+            //secondary window for form
+            genlogsform = new generate_accesslogs();
+            genlogsform.Hide();
+            //start syncing proccess, first pull data from SQL DB then, pass to mainform
+            Task.Run(() => SyncAccessLogView());
+            Task.Run(() => SyncAlarmLogView());
         }
-
+        /*********************************************************DelegateHandlers*****************************************************************/
         private void TCPConnectionHandler_AlarmRaised(AlarmLogEntry x) => mainform.Invoke(new UpdateFormAlarmList(mainform.UpdateAlarmLogs), x);
-
         private void TCPConnectionHandler_newAccessEntryTry(AccessEntryTry x) => mainform.Invoke(new UpdateFormAccesList(mainform.UpdateAccessLogs), x);
 
+        /***********************************************************Functions**********************************************************************/
+        private async void SyncAccessLogView()
+        {  
+            string c = "SELECT accesslog.cardid," + //SQL query string  
+                "usertable.fornavn, usertable.etternavn,accesslog.tid,accesslog.doornr,accesslog.accessgranted " +      
+                "FROM accesslog " +
+                "INNER JOIN usertable ON accesslog.cardid = usertable.personid " +
+                "ORDER BY tid DESC;";
+            Task<List<object>> task = SQL_Query.Query(c); //metod that returns a list of object based on the SQL query string
+            task.Wait();                                  //waits for async sql query to finish
+            mainform.Invoke(new UpdateView(mainform.PopulateListView), task.Result, mainform.listview_access_log); //passes the list of object to mainform to populatelist
+        }
+        private async void SyncAlarmLogView()
+        {   //identical built to SyncAccessLogView
+            string c = "SELECT CONCAT(usertable.etternavn,' ',usertable.fornavn), alarmlog.tid,alarmlog.doornr,alarmlog.alarmtype" +
+                " FROM alarmlog" +
+                " INNER JOIN usertable ON alarmlog.lastuser = usertable.personid" +
+                " ORDER BY alarmlog.tid DESC;";
+            Task<List<object>> task = SQL_Query.Query(c);
+            task.Wait();
+            mainform.Invoke(new UpdateView(mainform.PopulateListView), task.Result, mainform.listview_alarm_log);
+        }
+        private void PopulateListView(List<object> a, ListView x)
+        {   //populates listview x from list a
+            foreach (var item in a)
+            {
+                List<object> b = item as List<object>;  //in order to work with item as list we need to cast item to new list
+                string[] row = new string[b.Count];     //makes an array based on the item length
+                for (int i = 0; i < b.Count; i++)       //loops through the item list
+                {
+                    row[i] = b[i].ToString();           //inserts the data from item into stringarray
+                }
+                ListViewItem listViewItem = new ListViewItem(row);
+                x.Items.Add(listViewItem);              //adds the string array to listview
+            }
+        }
         private void UpdateAlarmLogs(AlarmLogEntry x)
-        {
-            //INSERT INTO SQL DB
-            AlarmIDnumber++;
-            string lastuser = string.Format("{0},{1}", x.LastUser.Etternavn, x.LastUser.Fornavn);
-            string[] row = {AlarmIDnumber.ToString(),
-                            x.AlarmType,
-                            lastuser,
-                            x.TimeStamp.ToString()};
+        {   //UpdateAlarmLogs
+            Task.Run(() => SQL_insertion.InsertIntoAlarmLog(x));//inserts the AlarmLogEntry into the Alarmlog DB
+            string lastuser = string.Format("{0} {1}", x.LastUser.Fornavn, x.LastUser.Etternavn);
+            string[] row = {lastuser,                           //creates a string array based on AlarmLogEntry
+                x.TimeStamp.ToString(),
+                x.DoorNumber.ToString(),
+                x.AlarmType };
             ListViewItem listViewItem = new ListViewItem(row);
-            listview_alarm_log.Items.Add(listViewItem);
+            listview_alarm_log.Items.Insert(0,listViewItem);   //the stringarray is inserted in listview at start, so we dont need to sync from SQL DB agian.
         }
         private void UpdateAccessLogs(AccessEntryTry x)
-        {   
-            //AND INSERT INTO DB
+        {
+            Task.Run(() => SQL_insertion.InsertIntoAccesslog(x));//inserts the AccessEntryTry into the Accesslog DB
+
             string a = string.Empty;
-            AccessIDnumber++;
-            if (x.AccessGranted) a = "Granted";
-            else a = "Denied";
-            string[] row = {AccessIDnumber.ToString(),
-                            x.User.CardID.ToString(),
-                            x.User.Etternavn,
-                            x.User.Fornavn,
-                            x.DoorNr.ToString(),
+            if (x.AccessGranted) a = "True";
+            else a = "False";
+            string[] row = {x._User.CardID.ToString(),         //creates a string array based on AccessEntryTry
+                            x._User.Fornavn,
+                            x._User.Etternavn,
                             x.TimeStamp.ToString(),
+                            x.DoorNr.ToString(),
                             a};
             ListViewItem listViewItem = new ListViewItem(row);
-            listview_access_log.Items.Add(listViewItem);
+            listview_access_log.Items.Insert(0,listViewItem); //the stringarray is inserted in listview at start, so we dont need to sync from SQL DB agian.
         }
-
-        private static void SQLlogAlarm(AlarmLogEntry x)
+        private bool MessageBox(string message, string title)
         {
-            //something something log alarm SQL, ID set bt SQL DB
-
-        }
-        private static void SQLlogAccessEntry(AccessEntryTry x)
-        {
-            //something something log access try from data to SQL, ID set bt SQL DB
-            var connString = "Host=server;Username=user;Password=mypass;Database=dbName";
-
-            using var con = new NpgsqlConnection(connString);
-            con.Open();
-
-            // Insert some data
-            using (var cmd = new NpgsqlCommand("INSERT INTO logAccess (user_id, door_nr, access_granted, date_time) " +
-                "VALUES (@UserId,@DoorNr,@AccessGranted, @DateTime)", con))
+            DialogResult dialogResult = System.Windows.Forms.MessageBox.Show(message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (dialogResult == DialogResult.Yes)
             {
-                cmd.Parameters.AddWithValue("UserId", x.User.CardID);
-                cmd.Parameters.AddWithValue("DoorNr", x.DoorNr);
-                cmd.Parameters.AddWithValue("AccessGranted", x.AccessGranted);
-                cmd.Parameters.AddWithValue("DateTime", x.TimeStamp);
-                cmd.ExecuteNonQuery();
+                return true;
             }
-
-            con.Close();
+            else
+            {
+                return false;
+            }
         }
+        /***********************************************************BUTTONS**********************************************************************/
+        private void generate_accesslogs_Click(object sender, EventArgs e)
+        {
+            genlogsform.ShowDialog(); //shows the form 
+        }
+        private void open_folder_Click(object sender, EventArgs e)
+        {   //starts a new windows explorer at filename path
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo() 
+            {
+                FileName = Application.StartupPath, 
+                UseShellExecute = true,
+                Verb = "open"
+            });
+        }
+        private void button5_Click(object sender, EventArgs e)
+        {
+            if (MessageBox("Are you sure you want to exit application?", "Warning"))
+            {
+                this.Close();   //closes mainform
+                this.Dispose(); //released the resources thats held by mainform
+            }
+        }
+
+
+
     }
 
 }

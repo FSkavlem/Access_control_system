@@ -29,30 +29,26 @@
         private void InitializeComponent()
         {
             this.ButtonPanel = new System.Windows.Forms.Panel();
-            this.button6 = new System.Windows.Forms.Button();
+            this.open_folder = new System.Windows.Forms.Button();
             this.button5 = new System.Windows.Forms.Button();
             this.panel3 = new System.Windows.Forms.Panel();
-            this.button4 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
+            this.generate_accesslogs = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
             this.Access_Panel = new System.Windows.Forms.Panel();
             this.Alarm_window = new System.Windows.Forms.Panel();
             this.listview_alarm_log = new System.Windows.Forms.ListView();
-            this.id = new System.Windows.Forms.ColumnHeader();
+            this.Lastuser = new System.Windows.Forms.ColumnHeader();
             this.AlarmType = new System.Windows.Forms.ColumnHeader();
-            this.last_user = new System.Windows.Forms.ColumnHeader();
+            this.doornr = new System.Windows.Forms.ColumnHeader();
             this.time = new System.Windows.Forms.ColumnHeader();
             this.Access_window = new System.Windows.Forms.Panel();
             this.listview_access_log = new System.Windows.Forms.ListView();
-            this.access_id = new System.Windows.Forms.ColumnHeader();
             this.Card_number = new System.Windows.Forms.ColumnHeader();
-            this.bruker_etternavn = new System.Windows.Forms.ColumnHeader();
-            this.Bruker_Fornavn = new System.Windows.Forms.ColumnHeader();
-            this.Door = new System.Windows.Forms.ColumnHeader();
+            this.fornavn = new System.Windows.Forms.ColumnHeader();
+            this.etternavn = new System.Windows.Forms.ColumnHeader();
             this.access_time = new System.Windows.Forms.ColumnHeader();
+            this.Door = new System.Windows.Forms.ColumnHeader();
             this.access_granted = new System.Windows.Forms.ColumnHeader();
             this.ButtonPanel.SuspendLayout();
             this.Alarm_window.SuspendLayout();
@@ -61,14 +57,11 @@
             // 
             // ButtonPanel
             // 
-            this.ButtonPanel.Controls.Add(this.button6);
+            this.ButtonPanel.Controls.Add(this.open_folder);
             this.ButtonPanel.Controls.Add(this.button5);
             this.ButtonPanel.Controls.Add(this.panel3);
-            this.ButtonPanel.Controls.Add(this.button4);
-            this.ButtonPanel.Controls.Add(this.button3);
             this.ButtonPanel.Controls.Add(this.panel2);
-            this.ButtonPanel.Controls.Add(this.button2);
-            this.ButtonPanel.Controls.Add(this.button1);
+            this.ButtonPanel.Controls.Add(this.generate_accesslogs);
             this.ButtonPanel.Controls.Add(this.panel1);
             this.ButtonPanel.Dock = System.Windows.Forms.DockStyle.Left;
             this.ButtonPanel.Location = new System.Drawing.Point(0, 0);
@@ -76,16 +69,17 @@
             this.ButtonPanel.Size = new System.Drawing.Size(200, 686);
             this.ButtonPanel.TabIndex = 0;
             // 
-            // button6
+            // open_folder
             // 
-            this.button6.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.button6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button6.Location = new System.Drawing.Point(0, 598);
-            this.button6.Name = "button6";
-            this.button6.Size = new System.Drawing.Size(200, 44);
-            this.button6.TabIndex = 9;
-            this.button6.Text = "Open Folder";
-            this.button6.UseVisualStyleBackColor = true;
+            this.open_folder.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.open_folder.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.open_folder.Location = new System.Drawing.Point(0, 598);
+            this.open_folder.Name = "open_folder";
+            this.open_folder.Size = new System.Drawing.Size(200, 44);
+            this.open_folder.TabIndex = 9;
+            this.open_folder.Text = "Open Report Folder";
+            this.open_folder.UseVisualStyleBackColor = true;
+            this.open_folder.Click += new System.EventHandler(this.open_folder_Click);
             // 
             // button5
             // 
@@ -97,66 +91,35 @@
             this.button5.TabIndex = 8;
             this.button5.Text = "Exit";
             this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
             // panel3
             // 
             this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel3.Location = new System.Drawing.Point(0, 421);
+            this.panel3.Location = new System.Drawing.Point(0, 289);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(200, 265);
+            this.panel3.Size = new System.Drawing.Size(200, 397);
             this.panel3.TabIndex = 5;
-            // 
-            // button4
-            // 
-            this.button4.Dock = System.Windows.Forms.DockStyle.Top;
-            this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button4.Location = new System.Drawing.Point(0, 377);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(200, 44);
-            this.button4.TabIndex = 7;
-            this.button4.Text = "button4";
-            this.button4.UseVisualStyleBackColor = true;
-            // 
-            // button3
-            // 
-            this.button3.Dock = System.Windows.Forms.DockStyle.Top;
-            this.button3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button3.Location = new System.Drawing.Point(0, 333);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(200, 44);
-            this.button3.TabIndex = 6;
-            this.button3.Text = "button3";
-            this.button3.UseVisualStyleBackColor = true;
             // 
             // panel2
             // 
             this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel2.Location = new System.Drawing.Point(0, 289);
+            this.panel2.Location = new System.Drawing.Point(0, 245);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(200, 44);
             this.panel2.TabIndex = 4;
             // 
-            // button2
+            // generate_accesslogs
             // 
-            this.button2.Dock = System.Windows.Forms.DockStyle.Top;
-            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button2.Location = new System.Drawing.Point(0, 245);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(200, 44);
-            this.button2.TabIndex = 5;
-            this.button2.Text = "Generate Alarmlog";
-            this.button2.UseVisualStyleBackColor = true;
-            // 
-            // button1
-            // 
-            this.button1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button1.Location = new System.Drawing.Point(0, 201);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(200, 44);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Generate Access Log";
-            this.button1.UseVisualStyleBackColor = true;
+            this.generate_accesslogs.Dock = System.Windows.Forms.DockStyle.Top;
+            this.generate_accesslogs.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.generate_accesslogs.Location = new System.Drawing.Point(0, 201);
+            this.generate_accesslogs.Name = "generate_accesslogs";
+            this.generate_accesslogs.Size = new System.Drawing.Size(200, 44);
+            this.generate_accesslogs.TabIndex = 1;
+            this.generate_accesslogs.Text = "Reports";
+            this.generate_accesslogs.UseVisualStyleBackColor = true;
+            this.generate_accesslogs.Click += new System.EventHandler(this.generate_accesslogs_Click);
             // 
             // panel1
             // 
@@ -187,10 +150,10 @@
             // listview_alarm_log
             // 
             this.listview_alarm_log.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.id,
-            this.AlarmType,
-            this.last_user,
-            this.time});
+            this.Lastuser,
+            this.time,
+            this.doornr,
+            this.AlarmType});
             this.listview_alarm_log.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listview_alarm_log.FullRowSelect = true;
             this.listview_alarm_log.GridLines = true;
@@ -201,25 +164,25 @@
             this.listview_alarm_log.UseCompatibleStateImageBehavior = false;
             this.listview_alarm_log.View = System.Windows.Forms.View.Details;
             // 
-            // id
+            // Lastuser
             // 
-            this.id.Text = "ID";
-            this.id.Width = 40;
+            this.Lastuser.Text = "ID";
+            this.Lastuser.Width = 200;
             // 
             // AlarmType
             // 
             this.AlarmType.Text = "Alarm type";
-            this.AlarmType.Width = 120;
+            this.AlarmType.Width = 140;
             // 
-            // last_user
+            // doornr
             // 
-            this.last_user.Text = "Last user";
-            this.last_user.Width = 300;
+            this.doornr.Text = "Door nr";
+            this.doornr.Width = 80;
             // 
             // time
             // 
             this.time.Text = "Time";
-            this.time.Width = 100;
+            this.time.Width = 300;
             // 
             // Access_window
             // 
@@ -234,12 +197,11 @@
             // listview_access_log
             // 
             this.listview_access_log.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.access_id,
             this.Card_number,
-            this.bruker_etternavn,
-            this.Bruker_Fornavn,
-            this.Door,
+            this.fornavn,
+            this.etternavn,
             this.access_time,
+            this.Door,
             this.access_granted});
             this.listview_access_log.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listview_access_log.FullRowSelect = true;
@@ -252,34 +214,29 @@
             this.listview_access_log.UseCompatibleStateImageBehavior = false;
             this.listview_access_log.View = System.Windows.Forms.View.Details;
             // 
-            // access_id
-            // 
-            this.access_id.Text = "ID";
-            this.access_id.Width = 40;
-            // 
             // Card_number
             // 
             this.Card_number.Text = "Card number";
             this.Card_number.Width = 100;
             // 
-            // bruker_etternavn
+            // fornavn
             // 
-            this.bruker_etternavn.Text = "Etternavn";
-            this.bruker_etternavn.Width = 130;
+            this.fornavn.Text = "Fornavn";
+            this.fornavn.Width = 120;
             // 
-            // Bruker_Fornavn
+            // etternavn
             // 
-            this.Bruker_Fornavn.Text = "Fornavn";
-            this.Bruker_Fornavn.Width = 130;
-            // 
-            // Door
-            // 
-            this.Door.Text = "Door";
+            this.etternavn.Text = "Etternavn";
+            this.etternavn.Width = 120;
             // 
             // access_time
             // 
             this.access_time.Text = "Access Time";
             this.access_time.Width = 150;
+            // 
+            // Door
+            // 
+            this.Door.Text = "Door";
             // 
             // access_granted
             // 
@@ -307,30 +264,26 @@
         #endregion
 
         private Panel ButtonPanel;
-        private Button button6;
+        private Button open_folder;
         private Button button5;
         private Panel panel3;
-        private Button button4;
-        private Button button3;
         private Panel panel2;
-        private Button button2;
-        private Button button1;
+        private Button generate_accesslogs;
         private Panel panel1;
         private Panel Access_Panel;
         private Panel Alarm_window;
         private Panel Access_window;
         private ListView listview_access_log;
-        private ColumnHeader access_id;
-        private ColumnHeader Bruker_Fornavn;
         private ColumnHeader Card_number;
         private ColumnHeader access_time;
         private ColumnHeader access_granted;
         private ListView listview_alarm_log;
-        private ColumnHeader id;
+        private ColumnHeader Lastuser;
         private ColumnHeader AlarmType;
-        private ColumnHeader last_user;
+        private ColumnHeader doornr;
         private ColumnHeader time;
-        private ColumnHeader bruker_etternavn;
         private ColumnHeader Door;
+        private ColumnHeader fornavn;
+        private ColumnHeader etternavn;
     }
 }

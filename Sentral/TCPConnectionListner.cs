@@ -14,14 +14,15 @@ namespace Sentral
         public static MainActivity mainform { get; set; }
         public TCPConnectionListner(MainActivity main)
         {
+            //starts the thread here in order to pass mainform handle
             mainform = main;
-            ThreadStart ts = new ThreadStart(StartListner);
-            Thread TCPThread = new Thread(ts);
-            TCPThread.Name = "TCPclientThread";
-            TCPThread.IsBackground = true;
+            ThreadStart ts = new ThreadStart(StartListner); //this thread handles incomming connection requests
+            Thread TCPThread = new Thread(ts);                 
+            TCPThread.Name = "TCPlistnerThread";                 
+            TCPThread.IsBackground = true;                     
             TCPThread.Start();
         }
-        private static void StartListner()
+        private static void StartListner()  
         {
             Socket ListenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint serverEP = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 9050);
@@ -31,11 +32,9 @@ namespace Sentral
             while (true)
             {
                 Socket ComSocket = ListenSocket.Accept(); // blokkerende metode
-                // Write established comms to Output Window
-                Debug.WriteLine("Comm Established: {0}:{1}", ComSocket.RemoteEndPoint, ComSocket.LocalEndPoint);
-                // passes socket to other thread
-                if (ComSocket.IsBound)
-                {   //start new connection handler
+                Debug.WriteLine("Comm Established: {0}:{1}", ComSocket.RemoteEndPoint, ComSocket.LocalEndPoint);// Write established comms to Output Window
+                if (ComSocket.IsBound) // passes socket to other thread
+                {   //starts new thread that handles the connection
                     TCPConnectionHandler tcp = new TCPConnectionHandler(mainform, ComSocket);
                 }
             }

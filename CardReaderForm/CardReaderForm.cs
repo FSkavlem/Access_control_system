@@ -50,7 +50,8 @@ namespace CardReaderForm
         public bool Alarm;
         public int AlarmType;
         private string keypadstring;
-        //private bool FourDigitsEntered;
+
+        public bool DEBUG = true;
 
         //internal vars
         private CardReaderForm instance;
@@ -81,7 +82,11 @@ namespace CardReaderForm
             Thread.CurrentThread.Name = "CardReaderForm";
 
             tcpClient.RunCLient(this);
-            
+            if (DEBUG) debug();
+        }
+        private void debug()
+        {
+            ToogleSwipeCardAndPin(true);
         }
         private void SetStartStateOfPublicVariables()
         {
@@ -227,11 +232,7 @@ namespace CardReaderForm
                 cbComPort.Items.Add(name);
             }
         }
-        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != '.')) e.Handled = true;
 
-        }
         private void keypad_1_Click(object sender, EventArgs e) => SetKeyPadChar("1");
         private void keypad_2_Click(object sender, EventArgs e) => SetKeyPadChar("2");
         private void keypad_3_Click(object sender, EventArgs e) => SetKeyPadChar("3");
@@ -246,6 +247,10 @@ namespace CardReaderForm
         {
             accessentry = true;
             ToogleSwipeCardAndPin(false);
+        }
+        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != '.')) e.Handled = true;
         }
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
