@@ -14,7 +14,7 @@ namespace Sentral
         public static MainActivity mainform { get; set; }
         public TCPConnectionListner(MainActivity main)
         {
-            //starts the thread here in order to pass mainform handle
+                                                            //starts the thread here in order to pass mainform handle
             mainform = main;
             ThreadStart ts = new ThreadStart(StartListner); //this thread handles incomming connection requests
             Thread TCPThread = new Thread(ts);                 

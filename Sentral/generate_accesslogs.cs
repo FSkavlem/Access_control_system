@@ -19,7 +19,10 @@ namespace Sentral
         }
 
         /*********************************************************functions*****************************************************************/
-        public async Task MakeAccessLogList(DateTime a, DateTime b)
+        /*
+         * All makeXreport functions are identical built, only difference is what they query the DB and what messages they send after completion.
+         */
+        public async Task MakeAccessLogReport(DateTime a, DateTime b)
         {
             string c = $"SELECT cardid, tid, doornr, accessgranted FROM accesslog WHERE (tid < '{b}') and (tid > '{a}');";              //this is a SQL query string
             Task<List<object>> task = SQL_Query.Query(c);                                                                               //sendsQuery to DB 
@@ -27,7 +30,7 @@ namespace Sentral
             SQL_Query.SQLQuerylist2TXT(task.Result, "AccessLog", "cardid, tid, doornr, accessgranted");                                 //this method converts list of object to TXT reports
             System.Windows.Forms.MessageBox.Show("AccessLog report Created!", "Complete",MessageBoxButtons.OK, MessageBoxIcon.Warning); //reports that report have been made by messagebox
         }
-        public async Task MakeNoAccessLogList()
+        public async Task MakeNoAccessLogReport()
         {
             string c = $"SELECT cardid, tid, doornr, accessgranted FROM accesslog WHERE accessgranted = false";
             Task<List<object>> task = SQL_Query.Query(c);
@@ -76,7 +79,7 @@ namespace Sentral
         {
             if (MessageBox($"Are you sure you want to generate no access logs?", "Generation"))
             {
-                Task.Run(() => MakeNoAccessLogList()); //Starts async operation to generate report
+                Task.Run(() => MakeNoAccessLogReport()); //Starts async operation to generate report
             }
         }
         private void listaccess_Click(object sender, EventArgs e)
@@ -85,7 +88,7 @@ namespace Sentral
             var b = dateTimePicker2.Value;
             if (MessageBox($"Are you sure you want to generate access logs from date {a} to {b} ?", "Generation"))
             {
-                Task.Run(() => MakeAccessLogList(a, b));//Starts async operation to generate report
+                Task.Run(() => MakeAccessLogReport(a, b));//Starts async operation to generate report
             }
         }
         private void alarmreport_Click(object sender, EventArgs e)

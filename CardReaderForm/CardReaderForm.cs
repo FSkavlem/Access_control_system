@@ -64,29 +64,99 @@ namespace CardReaderForm
         public CardReaderForm()
         {
             InitializeComponent();
-            StartUIupdater();
-            SetStartStateOfPublicVariables();
-            SetAvailableSerialPortsToDropdown();
+            StartUIupdater();                                                                           //starts a timer that updates door open/closed checkbox
+            SetStartStateOfPublicVariables();                                                           //sets initial public variables
+            SetAvailableSerialPortsToDropdown();                                                        //gets available comports and put the in combobox
 
-            this.MinimumSize = new Size(581, 390);
-            this.MaximumSize = new Size(581, 390);
-            //singleton
-            instance = this;
-            //subscribe to events
-            instance.FourDigitsEntered += FourdigitsEntered;
-            tcpClient._PinAnswerFromDB += TcpClient_PinAnswerFromDB;
-            tcpClient.ServerConnectStatus += TcpClient_ServerConnectStatus;
-            serialClient.NewAlarmEvent += SerialClient_DoorAlarm;
-            serialClient.DoorConnectStatus += SerialClient_DoorConnectStatus;
+            this.MinimumSize = new Size(581, 390);                                                      //size of window is hardcoded so its not changeable
+            this.MaximumSize = new Size(581, 390);                                                     
+
+            instance = this;                                                                            //singleton
+                                                                                                        //subscribe to events
+            instance.FourDigitsEntered += FourdigitsEntered;                                            //event when 4 digits is entered on keypad
+            tcpClient._PinAnswerFromDB += TcpClient_PinAnswerFromDB;                                    //event when validation of pin to card is received
+            tcpClient.ServerConnectStatus += TcpClient_ServerConnectStatus;                             //event when changes in server, cardreader connection
+            serialClient.NewAlarmEvent += SerialClient_DoorAlarm;                                       //event when alarm from door is raised
+            serialClient.DoorConnectStatus += SerialClient_DoorConnectStatus;                           //event when connection to door is changed 
 
             Thread.CurrentThread.Name = "CardReaderForm";
 
-            tcpClient.RunCLient(this);
+            tcpClient.RunCLient(this);                                                                  //starts tcpclient to cardreader
             if (DEBUG) debug();
         }
         private void debug()
         {
             ToogleSwipeCardAndPin(true);
+        }
+
+        /******************************************************Event Handlers*************************************************************/
+        #region EventHandlers
+        private void TcpClient_ServerConnectStatus(object? sender, EventArgs e)                 
+        {
+            instance.Invoke(new SetSeverLabelStatus(instance.SetServerLabalStatus), (bool)sender);      //When Server connection status changes set indicator in UI. Marshal to UI thread
+        }
+        private void SerialClient_DoorConnectStatus(object? sender, EventArgs e)
+        {
+            instance.Invoke(new SetDoorLabelStatus(instance.SetDoorLabalStatus), (bool)sender);         //When Door connection status changes set indicator in UI. Marshal to UI thread
+        }
+        private void SerialClient_DoorAlarm(object sender, DoorAlarmEventArgs e)                        
+        {
+            instance.Invoke(new SetAlarm(instance.PublishAlarmEvent), e.alarmtypes);                    /*When alarm is received from the door, this is on the serial thread
+                                                                                                         *to be able to execute changed on UI we must marshal up to parent
+                                                                                                         *that hold the UI
+                                                                                                         */
+        }
+
+        private void FourdigitsEntered(object? sender, EventArgs e)
+        {
+            CardInfo x = new CardInfo { CardID = getCardIDfromForm(), DoorNr = PublicDoor.nodeNum, PinEntered = keypadstring, Time = DateTime.Now };
+            sent_cardinfo = x;                                                                          //assembles the class to hold the accessrequest
+            NewAccessRequest handler = NewAccesRequest;                                                 
+            handler?.Invoke(this, new NewAccessRequestEventArgs(x));                                    //flaggs the event NewAccessRequest with the accessrequest
+        }                                                                                               //wrapped in the EventArgs
+        private void TcpClient_PinAnswerFromDB(object sender, PinAnswerFromDBEventArgs e)
+        {       
+            //tcpClient thread                                                                          //event that is published by TCP client when we 
+            ReturnCardComms x = e.returnCardComms;                                                      //have received ansveR if the pin entered was correct
+            instance.Invoke(new RestetAccessEntryForm(instance.ResetAccessEntry), x.Validation);        //lifts the validation to parent(cardreaderform)
+        }
+        private void PublishAlarmEvent(int x)
+        {                                                                                               //this is the elevated alarm in the cardreadform.
+            AlarmEvent z = new AlarmEvent { Alarm_type = x, DoorNumber = PublicDoor.nodeNum, LastUser = sent_cardinfo, Time = DateTime.Now };
+            PublishAlarm?.Invoke(new PublishAlarmEventArgs(z));                                         //this event is subscribed by TCP connection handler to send alarm to sentral
+        }
+
+        private void FireFourDigitsEnteredEvent() => FourDigitsEntered?.Invoke(this, EventArgs.Empty); //flags the fourdigitsentered event
+        private void FireOpenDoorEvent(bool x) => OpenDoorEvent?.Invoke(x);                            //flags the opendoorevent subscribed by serialCLient
+
+        private void Timer_Elapsed(object sender, EventArgs e)
+        {
+            UpdateCheckBoxes();
+        }
+        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != '.')) e.Handled = true;
+        }
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            cbComPort.Enabled = false;
+            serialClient.RunCLient(this, cbComPort.SelectedItem.ToString());
+            ToogleSwipeCardAndPin(true);
+        }
+        #endregion
+        /******************************************************Functions*************************************************************/
+        private void ResetAccessEntry(bool x)                                                           //alsoHandlesOpenDoor
+        {
+            WipePinEntered();                                                                           //removed the entered pin from UI
+            UpdateListView(x);                                                                          //updates the list in the cardreader to display the user and card
+            ToogleSwipeCardAndPin(true);                                                                //enables the buttons so new card can be swiped
+            accessentry = false;
+            if (x) FireOpenDoorEvent(x);
+        }
+        private void ToogleSwipeCardAndPin(bool x)
+        {
+            button_cardreader.Enabled = x;
+            textBox1.Enabled = x;
         }
         private void SetStartStateOfPublicVariables()
         {
@@ -105,90 +175,6 @@ namespace CardReaderForm
             UIupdateTimer.Tick += new EventHandler(Timer_Elapsed);
             UIupdateTimer.Enabled = true;
         }
-        #region EventHandlers
-        private void TcpClient_ServerConnectStatus(object? sender, EventArgs e)
-        {
-            instance.Invoke(new SetSeverLabelStatus(instance.SetServerLabalStatus), (bool)sender);
-        }
-        private void SerialClient_DoorConnectStatus(object? sender, EventArgs e)
-        {
-            instance.Invoke(new SetDoorLabelStatus(instance.SetDoorLabalStatus), (bool)sender);
-        }
-        private void SerialClient_DoorAlarm(object sender, DoorAlarmEventArgs e)
-        {
-            //serial_thread
-            instance.Invoke(new SetAlarm(instance.PublishAlarmEvent), e.alarmtypes);
-        }
-        private void FourdigitsEntered(object? sender, EventArgs e)
-        {
-            //intra thread
-            CardInfo x = new CardInfo { CardID = getCardIDfromForm(), DoorNr = PublicDoor.nodeNum, PinEntered = keypadstring, Time = DateTime.Now };
-            sent_cardinfo = x;
-            NewAccessRequest handler = NewAccesRequest;
-            handler?.Invoke(this, new NewAccessRequestEventArgs(x)); //fire event
-        }
-        private void TcpClient_PinAnswerFromDB(object sender, PinAnswerFromDBEventArgs e)
-        {
-            //tcpClient thread
-            ReturnCardComms x = e.returnCardComms;
-            instance.Invoke(new RestetAccessEntryForm(instance.ResetAccessEntry), x.Validation);
-        }
-        private void ResetAccessEntry(bool x) //alsoHandlesOpenDoor
-        {
-            WipePinEntered();
-            UpdateListView(x);
-            WipePinEntered();
-            ToogleSwipeCardAndPin(true);
-            accessentry = false;
-            if (x) FireOpenDoorEvent(x);
-
-
-        }
-        private void SetDoorLabalStatus(bool x)
-        {
-            if (x)
-            {
-                label_connectedSerial.Text = "Connected to door";
-                label_connectedSerial.BackColor = Color.Green;
-            }
-            else
-            {
-                label_connectedSerial.Text = "Not connected to door";
-                label_connectedSerial.BackColor = Color.Red;
-            }
-        }
-        private void SetServerLabalStatus(bool x)
-        {
-            if (x)
-            {
-                label_connectedTcp.Text = "Connected to server";
-                label_connectedTcp.BackColor = Color.Green;
-            }
-            else
-            {
-                label_connectedTcp.Text = "Not connected to server";
-                label_connectedTcp.BackColor = Color.Red;
-            }
-        }
-        private void FireFourDigitsEnteredEvent() => FourDigitsEntered?.Invoke(this, EventArgs.Empty);
-        private void FireOpenDoorEvent(bool x) => OpenDoorEvent?.Invoke(x);
-
-        private void Timer_Elapsed(object sender, EventArgs e)
-        {
-            UpdateCheckBoxes();
-        }
-        #endregion
-        private void ToogleSwipeCardAndPin(bool x)
-        {
-            button_cardreader.Enabled = x;
-            textBox1.Enabled = x;
-        }
-        private void PublishAlarmEvent(int x)
-        {
-            AlarmEvent z = new AlarmEvent {Alarm_type=x, DoorNumber=PublicDoor.nodeNum,LastUser=sent_cardinfo, Time=DateTime.Now};
-            PublishAlarm?.Invoke(new PublishAlarmEventArgs(z));
-        }
-        //public bool GetOpenDoorBool() => OpenDoor;
         public void SetKeyPadChar(string x)
         {
             if ((keypadstring.Length <= 4) & accessentry)
@@ -233,6 +219,33 @@ namespace CardReaderForm
             }
         }
 
+        private void SetDoorLabalStatus(bool x)
+        {
+            if (x)
+            {
+                label_connectedSerial.Text = "Connected to door";
+                label_connectedSerial.BackColor = Color.Green;
+            }
+            else
+            {
+                label_connectedSerial.Text = "Not connected to door";
+                label_connectedSerial.BackColor = Color.Red;
+            }
+        }
+        private void SetServerLabalStatus(bool x)
+        {
+            if (x)
+            {
+                label_connectedTcp.Text = "Connected to server";
+                label_connectedTcp.BackColor = Color.Green;
+            }
+            else
+            {
+                label_connectedTcp.Text = "Not connected to server";
+                label_connectedTcp.BackColor = Color.Red;
+            }
+        }
+        /******************************************************BUTTONS*************************************************************/
         private void keypad_1_Click(object sender, EventArgs e) => SetKeyPadChar("1");
         private void keypad_2_Click(object sender, EventArgs e) => SetKeyPadChar("2");
         private void keypad_3_Click(object sender, EventArgs e) => SetKeyPadChar("3");
@@ -248,17 +261,6 @@ namespace CardReaderForm
             accessentry = true;
             ToogleSwipeCardAndPin(false);
         }
-        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != '.')) e.Handled = true;
-        }
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            cbComPort.Enabled = false;
-            serialClient.RunCLient(this, cbComPort.SelectedItem.ToString());
-            ToogleSwipeCardAndPin(true);
-        }
-
     }
 
 }

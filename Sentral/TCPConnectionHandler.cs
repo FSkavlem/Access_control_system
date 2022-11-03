@@ -16,7 +16,7 @@ namespace Sentral
     public delegate void AlarmRaised(AlarmLogEntry x);
     public class TCPConnectionHandler
     {
-        public static MainActivity Mainform;
+        public static MainActivity Mainform;                                                                            
         public static Socket comsocket;
         public static event NewAccessEntryTry newAccessEntryTry;
         public static event AlarmRaised AlarmRaised;
@@ -38,11 +38,11 @@ namespace Sentral
             Socket ComSocket = comsocket;
             bool error = false;
             bool complete = false;
-            Messages.SendString(ComSocket, PackageIdentifier.ServerACK, out error); //sends a acknowledge that connection is established
+            Messages.SendString(ComSocket, PackageIdentifier.ServerACK, out error);                             //sends a acknowledge that connection is established
 
-            while (ComSocket.Connected)
+            while (ComSocket.Connected)                                                                         //loops this function aslong as the connection is open
             {
-                if (ComSocket.Available > 0) // receive data from connected socket if available
+                if (ComSocket.Available > 0)                                                                    // receive data from connected socket if available
                 {
                     string receivedString = Messages.ReceiveString(ComSocket, out error);                       //gets the data available on ComSocket
                     string packageID = Messages.GetPackageIdentifier(ref receivedString, out receivedString);   //each datapacket contains a 6 digit identifier

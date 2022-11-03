@@ -62,8 +62,6 @@ namespace CardReaderForm
             LostConnection = false;
             serialClient = this;
             serialPort = new SerialPort();
-
-            //SetupTimers(ref DoorTimer, 200, ref PollingTimer, 3000);   //will poll door every 3s.
         
             while (true)
             {
@@ -83,8 +81,6 @@ namespace CardReaderForm
                 if (doorStatus.DoorOpen_e6) Statemachine(States.StartDoorTimer);
                 if (!doorStatus.DoorOpen_e6) Statemachine(States.StopDoorTimer);
 
-                //checkbox true door open=> door.open = true, checkbox false door closed =door.open = false
-                //checkbox true lock closed=> door.locked = true, checkbox false unlocked closed=> door.locked = false
             }
 
             void Statemachine(int states)
