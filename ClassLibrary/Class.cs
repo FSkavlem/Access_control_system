@@ -64,7 +64,7 @@ namespace ClassLibrary
                     list.Add(listinner);                                   //puts innerlist of object that contains the complete row into a list
                 }
             }
-            con.Close();
+            con.Close();                                                   //closes the connection to sql database
             return list;                                                   //returns the list of rows from sql query
         }
         public static void SQLQuerylist2TXT(List<object> y, string filename, string firstLine)
@@ -195,6 +195,11 @@ namespace ClassLibrary
     public static class DBINFO
     {
         public static string connectionString = "Host=20.56.240.122;Username=h577783;Password=g7Np2wVa;Database=h577783";
+    }
+    public static class SentralInfo
+    {
+        public static string ipaddress = "127.0.0.1";
+        public static int port = 9050;
     }
     public static class States
     {

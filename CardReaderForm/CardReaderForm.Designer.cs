@@ -59,6 +59,8 @@
             this.label7 = new System.Windows.Forms.Label();
             this.label_connectedTcp = new System.Windows.Forms.Label();
             this.label_connectedSerial = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.textBox_doornr = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // listview_access_log
@@ -354,6 +356,26 @@
             this.label_connectedSerial.TabIndex = 23;
             this.label_connectedSerial.Text = "Not connected to door";
             // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(400, 247);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(46, 15);
+            this.label8.TabIndex = 23;
+            this.label8.Text = "DoorNr";
+            // 
+            // textBox_doornr
+            // 
+            this.textBox_doornr.Enabled = false;
+            this.textBox_doornr.Location = new System.Drawing.Point(400, 265);
+            this.textBox_doornr.MaxLength = 4;
+            this.textBox_doornr.Name = "textBox_doornr";
+            this.textBox_doornr.Size = new System.Drawing.Size(46, 23);
+            this.textBox_doornr.TabIndex = 18;
+            this.textBox_doornr.Text = "1";
+            this.textBox_doornr.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
             // CardReaderForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -361,11 +383,13 @@
             this.ClientSize = new System.Drawing.Size(564, 349);
             this.Controls.Add(this.label_connectedSerial);
             this.Controls.Add(this.label_connectedTcp);
+            this.Controls.Add(this.label8);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.cbComPort);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.checkBox_cardonreader);
             this.Controls.Add(this.button_cardreader);
+            this.Controls.Add(this.textBox_doornr);
             this.Controls.Add(this.textBox_pinentered);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.keypad_0);
@@ -426,5 +450,7 @@
         private Label label7;
         private Label label_connectedTcp;
         private Label label_connectedSerial;
+        private Label label8;
+        private TextBox textBox_doornr;
     }
 }

@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 
 namespace Sentral
 {
+
     public delegate void NewAccessEntryTry(AccessEntryTry x);
     public delegate void AlarmRaised(AlarmLogEntry x);
     public class TCPConnectionHandler
@@ -23,18 +24,28 @@ namespace Sentral
 
         public TCPConnectionHandler(MainActivity x, Socket y)
         {
-            //passes singleton handle to mainform
-            Mainform = x;
+            /*
+             * connectionhandler handles the connection request on tcp pipe on separate thread
+             */
+
+            Mainform = x; //passes singleton handle to mainform
             comsocket = y;
-            //connectionhandler handles the connection request on tcp pipe on separate thread
-            ThreadStart ts = new ThreadStart(ConnectionHandler);
-            Thread TCPThread = new Thread(ts);
-            TCPThread.Name = "TCPclientThread";
+            
+            ThreadStart ts = new ThreadStart(ConnectionHandler);    //makes a thread start object based on ConnectionHandler
+            Thread TCPThread = new Thread(ts);                      //passes thread start object to a thread
+            TCPThread.Name = "TCPServerThread";                     //sets the thread name
             TCPThread.IsBackground = true;
-            TCPThread.Start();
-        } 
+            TCPThread.Start();                                      //starts the tcpserver
+        }
+        /*****************************************************TCPCLIENT*******************************************************/
         public static async void ConnectionHandler()
         {
+            /* 
+            * The TCPsever in primarely built around what is received from the tcp pipe, this is done by having a constant while loop
+            * listeneing to any incomming traffic on connected comsocket.
+            * In all the communcation between server and client there is package identifiers in front of receive string that
+            * lets us easily identify what class to deserialize the json object into.
+            */
             Socket ComSocket = comsocket;
             bool error = false;
             bool complete = false;
@@ -79,6 +90,9 @@ namespace Sentral
         }
         private static bool CheckUserPin(CardInfo data, User user)
         {
+            /* 
+          * this method check if the pin between recevied carddata and user from SQL db matches.
+          */
             bool access;
             if (user.Pin == data.PinEntered)
             {

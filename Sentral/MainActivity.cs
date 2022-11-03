@@ -47,54 +47,71 @@ namespace Sentral
 
         /***********************************************************Functions**********************************************************************/
         private async void SyncAccessLogView()
-        {  
-            string c = "SELECT accesslog.cardid," + //SQL query string  
+        {
+           /* 
+            * this function sync the listview on the server UI to 
+            * match the accesslog table from SQL database on startup
+            */
+            string c = "SELECT accesslog.cardid," +             //SQL query string  
                 "usertable.fornavn, usertable.etternavn,accesslog.tid,accesslog.doornr,accesslog.accessgranted " +      
                 "FROM accesslog " +
                 "INNER JOIN usertable ON accesslog.cardid = usertable.personid " +
                 "ORDER BY tid DESC;";
-            Task<List<object>> task = SQL_Query.Query(c); //metod that returns a list of object based on the SQL query string
-            task.Wait();                                  //waits for async sql query to finish
+            Task<List<object>> task = SQL_Query.Query(c);       //metod that returns a list of object based on the SQL query string
+            task.Wait();                                        //waits for async sql query to finish
             mainform.Invoke(new UpdateView(mainform.PopulateListView), task.Result, mainform.listview_access_log); //passes the list of object to mainform to populatelist
         }
         private async void SyncAlarmLogView()
-        {   //identical built to SyncAccessLogView
+        {  /* 
+            * this function sync the listview on the server UI to 
+            * match the alarm table from SQL database on startup
+            */
             string c = "SELECT CONCAT(usertable.etternavn,' ',usertable.fornavn), alarmlog.tid,alarmlog.doornr,alarmlog.alarmtype" +
-                " FROM alarmlog" +
+                " FROM alarmlog" +                              //SQL query string
                 " INNER JOIN usertable ON alarmlog.lastuser = usertable.personid" +
                 " ORDER BY alarmlog.tid DESC;";
-            Task<List<object>> task = SQL_Query.Query(c);
-            task.Wait();
+            Task<List<object>> task = SQL_Query.Query(c);       //metod that returns a list of object based on the SQL query string
+            task.Wait();                                        //waits for async sql query to finish
             mainform.Invoke(new UpdateView(mainform.PopulateListView), task.Result, mainform.listview_alarm_log);
         }
         private void PopulateListView(List<object> a, ListView x)
-        {   //populates listview x from list a
+        {
+           /* 
+            * this function is a generic function that populates listview x from list a
+            */
             foreach (var item in a)
             {
-                List<object> b = item as List<object>;  //in order to work with item as list we need to cast item to new list
-                string[] row = new string[b.Count];     //makes an array based on the item length
-                for (int i = 0; i < b.Count; i++)       //loops through the item list
+                List<object> b = item as List<object>;          //in order to work with item as list we need to cast item to new list
+                string[] row = new string[b.Count];             //makes an array based on the item length
+                for (int i = 0; i < b.Count; i++)               //loops through the item list
                 {
-                    row[i] = b[i].ToString();           //inserts the data from item into stringarray
+                    row[i] = b[i].ToString();                   //inserts the data from item into stringarray
                 }
                 ListViewItem listViewItem = new ListViewItem(row);
-                x.Items.Add(listViewItem);              //adds the string array to listview
+                x.Items.Add(listViewItem);                      //adds the string array to listview
             }
         }
         private void UpdateAlarmLogs(AlarmLogEntry x)
-        {   //UpdateAlarmLogs
-            Task.Run(() => SQL_insertion.InsertIntoAlarmLog(x));//inserts the AlarmLogEntry into the Alarmlog DB
+        {   /* 
+            * this function handles the updating of alarmlogs in both the SQL
+            * database and in the server UI
+            */
+            Task.Run(() => SQL_insertion.InsertIntoAlarmLog(x));//inserts the AlarmLogEntry into the Alarmlog SQL DB
             string lastuser = string.Format("{0} {1}", x.LastUser.Fornavn, x.LastUser.Etternavn);
             string[] row = {lastuser,                           //creates a string array based on AlarmLogEntry
                 x.TimeStamp.ToString(),
                 x.DoorNumber.ToString(),
                 x.AlarmType };
             ListViewItem listViewItem = new ListViewItem(row);
-            listview_alarm_log.Items.Insert(0,listViewItem);   //the stringarray is inserted in listview at start, so we dont need to sync from SQL DB agian.
+            listview_alarm_log.Items.Insert(0,listViewItem);    //the stringarray is inserted in listview at start, so we dont need to sync from SQL DB agian.
         }
         private void UpdateAccessLogs(AccessEntryTry x)
         {
-            Task.Run(() => SQL_insertion.InsertIntoAccesslog(x));//inserts the AccessEntryTry into the Accesslog DB
+           /* 
+            * this function handles the updating of accesslogs in both the SQL
+            * database and in the server UI
+            */
+            Task.Run(() => SQL_insertion.InsertIntoAccesslog(x));//inserts the AccessEntryTry into the Accesslog SQL DB
 
             string a = string.Empty;
             if (x.AccessGranted) a = "True";
@@ -110,6 +127,10 @@ namespace Sentral
         }
         private bool MessageBox(string message, string title)
         {
+            /* 
+            * this function is created a generic messages messagebox based on 
+            * message and title passed to function
+            */
             DialogResult dialogResult = System.Windows.Forms.MessageBox.Show(message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (dialogResult == DialogResult.Yes)
             {
