@@ -11,9 +11,9 @@ using ClassLibrary;
 
 namespace Sentral
 {
-    public partial class generate_accesslogs : Form
+    public partial class generate_reports : Form
     {
-        public generate_accesslogs()
+        public generate_reports()
         {
             InitializeComponent();
         }
@@ -92,8 +92,8 @@ namespace Sentral
         /*********************************************************buttons*****************************************************************/
         private void listnoaccess_Click(object sender, EventArgs e)
         {
-            var a = textBox1.Text;
-            if (MessageBox($"Are you sure you want to generate no access logs?", "Generation"))
+            var a = GetFromTxtbox();                   //Gets doornr from textbox  
+            if (MessageBox($"Are you sure you want to generate no access logs for room {a}?", "Generation"))
             {
                 Task.Run(() => MakeNoAccessLogReport(a)); //Starts async operation to generate report
             }
@@ -125,7 +125,7 @@ namespace Sentral
         }
         private void firstlast_Click(object sender, EventArgs e)
         {
-            var a = textBox1.Text;
+            var a = GetFromTxtbox();                   //Gets doornr from textbox  
             if (MessageBox($"Are you sure you want to generate First last report for room {a}?", "Generation"))
             {
                 Task.Run(() => MakeFirstLastReport(a));//Starts async operation to generate report
@@ -147,6 +147,13 @@ namespace Sentral
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
         {   //ensures nothing else than digits is entered in text box
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != '.')) e.Handled = true;
+        }
+        private string GetFromTxtbox()
+        {
+            string a = textBox1.Text;
+            if (a == "") return "0";
+            else return a;
+           
         }
     }
 }

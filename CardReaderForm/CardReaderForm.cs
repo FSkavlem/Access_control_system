@@ -45,7 +45,7 @@ namespace CardReaderForm
         public int AlarmType;
         private string keypadstring;
 
-        public bool DEBUG = true;
+        public bool DEBUG = true;                                                                      //to activate swipcard and doornr without serial connection
 
         /*********************************************internal class vars used by cardreaderform****************************************/
         private CardReaderForm instance;

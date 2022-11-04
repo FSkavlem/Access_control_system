@@ -1,6 +1,6 @@
 ﻿namespace Sentral
 {
-    partial class generate_accesslogs
+    partial class generate_reports
     {
         /// <summary>
         /// Required designer variable.
@@ -49,6 +49,7 @@
             this.dateTimePicker1.Name = "dateTimePicker1";
             this.dateTimePicker1.Size = new System.Drawing.Size(200, 23);
             this.dateTimePicker1.TabIndex = 0;
+            this.dateTimePicker1.Value = new System.DateTime(2022, 8, 1, 0, 0, 0, 0);
             // 
             // dateTimePicker2
             // 
@@ -151,6 +152,7 @@
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(100, 23);
             this.textBox1.TabIndex = 4;
+            this.textBox1.Text = "1";
             this.textBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox1_KeyPress);
             // 
             // label3
@@ -162,7 +164,7 @@
             this.label3.TabIndex = 5;
             this.label3.Text = "Door number";
             // 
-            // generate_accesslogs
+            // generate_reports
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -181,7 +183,7 @@
             this.Controls.Add(this.dateTimePicker2);
             this.Controls.Add(this.dateTimePicker1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Name = "generate_accesslogs";
+            this.Name = "generate_reports";
             this.Text = "generate_accesslogs";
             this.ResumeLayout(false);
             this.PerformLayout();

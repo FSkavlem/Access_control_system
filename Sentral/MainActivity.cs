@@ -18,7 +18,7 @@ namespace Sentral
     public partial class MainActivity : Form
     {
         public static MainActivity mainform;
-        public static generate_accesslogs genlogsform;
+        public static generate_reports genlogsform;
 
         public MainActivity()
         {
@@ -35,7 +35,7 @@ namespace Sentral
             TCPConnectionHandler.AlarmRaised += TCPConnectionHandler_AlarmRaised;
 
             //secondary window for form
-            genlogsform = new generate_accesslogs();
+            genlogsform = new generate_reports();
             genlogsform.Hide();
             //start syncing proccess, first pull data from SQL DB then, pass to mainform
             Task.Run(() => SyncAccessLogView());
