@@ -47,7 +47,7 @@ namespace CardReaderForm
 
         public bool DEBUG = true;                                                                      //to activate swipcard and doornr without serial connection
 
-        /*********************************************internal class vars used by cardreaderform****************************************/
+        /*********************************************internal class vars used by cardreade rform****************************************/
         private CardReaderForm instance;
         private CardInfo sent_cardinfo;
         private TCPclient tcpClient = new TCPclient();

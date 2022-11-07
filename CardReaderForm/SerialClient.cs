@@ -227,7 +227,6 @@ namespace CardReaderForm
             door.Alarm_e7 = arr[7];                                                       //Generic alarm from door(SIMSIM) 
             door.DoorForce = int.Parse(result[6]);                                        //force potmeter from door
             return door;                                                                  //returns the door
-        
         }
         private static bool[] GetBoolArrayFromString(string v)
         {

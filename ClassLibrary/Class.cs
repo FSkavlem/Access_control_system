@@ -109,7 +109,7 @@ namespace ClassLibrary
             string insertstring = $"INSERT INTO accesslog (cardid,tid,doornr,accessgranted) VALUES ({x._User.CardID}, '{x.TimeStamp.ToString()}',{x.DoorNr},{b});";
             Task.Run(() => injection(insertstring));                        //starts the SQL injection async
         }
-        private async static void injection(string x)
+        public async static void injection(string x)
         {
             /* 
              * this function takes a string and tries to insert it into the database based

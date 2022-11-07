@@ -31,7 +31,7 @@ namespace Sentral
             Task<List<object>> task = SQL_Query.Query(c);                                                                               //sendsQuery to DB 
             task.Wait();
             SQL_Query.SQLQuerylist2TXT(task.Result, "AccessLog", "cardid, tid, doornr, accessgranted");                                 //this method converts list of object to TXT reports
-            System.Windows.Forms.MessageBox.Show("AccessLog report Created!", "Complete",MessageBoxButtons.OK, MessageBoxIcon.Warning);    //reports that report have been made by messagebox
+            System.Windows.Forms.MessageBox.Show("AccessLog report Created!", "Complete",MessageBoxButtons.OK, MessageBoxIcon.Warning); //reports that report have been made by messagebox
         }
         public async Task MakeNoAccessLogReport(string a)
         {

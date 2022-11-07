@@ -19,6 +19,7 @@ namespace Sentral
     {
         public static MainActivity mainform;
         public static generate_reports genlogsform;
+        public static UserManagement userManagement;
 
         public MainActivity()
         {
@@ -37,6 +38,9 @@ namespace Sentral
             //secondary window for form
             genlogsform = new generate_reports();
             genlogsform.Hide();
+            userManagement = new UserManagement(this);
+            userManagement.Hide();
+
             //start syncing proccess, first pull data from SQL DB then, pass to mainform
             Task.Run(() => SyncAccessLogView());
             Task.Run(() => SyncAlarmLogView());
@@ -164,8 +168,10 @@ namespace Sentral
             }
         }
 
-
-
+        private void user_admin_Click(object sender, EventArgs e)
+        {
+            userManagement.ShowDialog();
+        }
     }
 
 }

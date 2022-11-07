@@ -29,19 +29,19 @@
         private void InitializeComponent()
         {
             this.ButtonPanel = new System.Windows.Forms.Panel();
+            this.user_admin = new System.Windows.Forms.Button();
             this.open_folder = new System.Windows.Forms.Button();
             this.button5 = new System.Windows.Forms.Button();
             this.panel3 = new System.Windows.Forms.Panel();
-            this.panel2 = new System.Windows.Forms.Panel();
             this.generate_accesslogs = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
             this.Access_Panel = new System.Windows.Forms.Panel();
             this.Alarm_window = new System.Windows.Forms.Panel();
             this.listview_alarm_log = new System.Windows.Forms.ListView();
             this.Lastuser = new System.Windows.Forms.ColumnHeader();
-            this.AlarmType = new System.Windows.Forms.ColumnHeader();
-            this.doornr = new System.Windows.Forms.ColumnHeader();
             this.time = new System.Windows.Forms.ColumnHeader();
+            this.doornr = new System.Windows.Forms.ColumnHeader();
+            this.AlarmType = new System.Windows.Forms.ColumnHeader();
             this.Access_window = new System.Windows.Forms.Panel();
             this.listview_access_log = new System.Windows.Forms.ListView();
             this.Card_number = new System.Windows.Forms.ColumnHeader();
@@ -57,10 +57,10 @@
             // 
             // ButtonPanel
             // 
+            this.ButtonPanel.Controls.Add(this.user_admin);
             this.ButtonPanel.Controls.Add(this.open_folder);
             this.ButtonPanel.Controls.Add(this.button5);
             this.ButtonPanel.Controls.Add(this.panel3);
-            this.ButtonPanel.Controls.Add(this.panel2);
             this.ButtonPanel.Controls.Add(this.generate_accesslogs);
             this.ButtonPanel.Controls.Add(this.panel1);
             this.ButtonPanel.Dock = System.Windows.Forms.DockStyle.Left;
@@ -68,6 +68,18 @@
             this.ButtonPanel.Name = "ButtonPanel";
             this.ButtonPanel.Size = new System.Drawing.Size(200, 686);
             this.ButtonPanel.TabIndex = 0;
+            // 
+            // user_admin
+            // 
+            this.user_admin.Dock = System.Windows.Forms.DockStyle.Top;
+            this.user_admin.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.user_admin.Location = new System.Drawing.Point(0, 245);
+            this.user_admin.Name = "user_admin";
+            this.user_admin.Size = new System.Drawing.Size(200, 44);
+            this.user_admin.TabIndex = 10;
+            this.user_admin.Text = "User admin";
+            this.user_admin.UseVisualStyleBackColor = true;
+            this.user_admin.Click += new System.EventHandler(this.user_admin_Click);
             // 
             // open_folder
             // 
@@ -96,18 +108,10 @@
             // panel3
             // 
             this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel3.Location = new System.Drawing.Point(0, 289);
+            this.panel3.Location = new System.Drawing.Point(0, 245);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(200, 397);
+            this.panel3.Size = new System.Drawing.Size(200, 441);
             this.panel3.TabIndex = 5;
-            // 
-            // panel2
-            // 
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel2.Location = new System.Drawing.Point(0, 245);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(200, 44);
-            this.panel2.TabIndex = 4;
             // 
             // generate_accesslogs
             // 
@@ -169,20 +173,20 @@
             this.Lastuser.Text = "ID";
             this.Lastuser.Width = 200;
             // 
-            // AlarmType
+            // time
             // 
-            this.AlarmType.Text = "Alarm type";
-            this.AlarmType.Width = 140;
+            this.time.Text = "Time";
+            this.time.Width = 300;
             // 
             // doornr
             // 
             this.doornr.Text = "Door nr";
             this.doornr.Width = 80;
             // 
-            // time
+            // AlarmType
             // 
-            this.time.Text = "Time";
-            this.time.Width = 300;
+            this.AlarmType.Text = "Alarm type";
+            this.AlarmType.Width = 140;
             // 
             // Access_window
             // 
@@ -267,7 +271,6 @@
         private Button open_folder;
         private Button button5;
         private Panel panel3;
-        private Panel panel2;
         private Button generate_accesslogs;
         private Panel panel1;
         private Panel Access_Panel;
@@ -285,5 +288,6 @@
         private ColumnHeader Door;
         private ColumnHeader fornavn;
         private ColumnHeader etternavn;
+        private Button user_admin;
     }
 }
